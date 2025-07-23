@@ -73,7 +73,13 @@ jobs:
             "ReadFileTool",
             "WriteFileTool",
             "EditFileTool",
-            "ShellTool"
+            "ShellTool",
+            "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+            "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+            "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+            "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+            "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+            "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result"
           ]
         }
         EOF
@@ -209,7 +215,13 @@ jobs:
             "ReadFileTool",
             "WriteFileTool",
             "EditFileTool",
-            "ShellTool"
+            "ShellTool",
+            "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+            "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+            "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+            "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+            "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+            "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result"
           ]
         }
         EOF
@@ -350,7 +362,13 @@ jobs:
             "ReadFileTool",
             "WriteFileTool",
             "EditFileTool",
-            "ShellTool"
+            "ShellTool",
+            "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+            "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+            "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+            "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+            "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+            "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result"
           ]
         }
         EOF
@@ -501,7 +519,13 @@ jobs:
             "ReadFileTool",
             "WriteFileTool",
             "EditFileTool",
-            "ShellTool"
+            "ShellTool",
+            "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+            "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+            "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+            "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+            "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+            "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result"
           ]
         }
         EOF
