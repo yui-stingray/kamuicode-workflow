@@ -1,0 +1,1 @@
+Based on the prompt "a cat playing under a cherry blossom tree," the image prompt focuses on a static, high-detail photorealistic moment with specific lighting and composition, while the video prompt emphasizes dynamic action, movement of the cat and the environment (falling petals, breeze) to create a lively, cinematic scene.
