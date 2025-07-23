@@ -1,0 +1,693 @@
+name: Gemini Image-to-Video Generation & Analysis
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_prompt:
+        description: '基本生成プロンプト'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  setup-branch:
+    runs-on: ubuntu-latest
+    outputs:
+      branch-name: ${{ steps.branch.outputs.branch-name }}
+      folder-name: ${{ steps.branch.outputs.folder-name }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.PAT_TOKEN || github.token }}
+        
+    - name: Create branch name
+      id: branch
+      run: |
+        TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+        BRANCH_NAME="gemini-i2v-$TIMESTAMP"
+        FOLDER_NAME="video-$TIMESTAMP"
+        echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+        echo "folder-name=$FOLDER_NAME" >> $GITHUB_OUTPUT
+        
+    - name: Create and switch to new branch
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git checkout -b "${{ steps.branch.outputs.branch-name }}"
+        git push -u origin "${{ steps.branch.outputs.branch-name }}"
+
+  planning:
+    runs-on: ubuntu-latest
+    needs: setup-branch
+    outputs:
+      image-prompt: ${{ steps.verify.outputs.image-prompt }}
+      video-prompt: ${{ steps.verify.outputs.video-prompt }}
+      planning-completed: ${{ steps.verify.outputs.completed }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.setup-branch.outputs.branch-name }}
+        
+    - name: Create .gemini/settings.json
+      run: |
+        mkdir -p .gemini
+        cat > .gemini/settings.json << EOF
+        {
+          "mcpServers": {
+            "t2i-fal-imagen4-fast": {
+              "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_FAST_URL }}",
+              "timeout": 300000
+            },
+            "i2v-fal-hailuo-02-pro": {
+              "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
+              "timeout": 300000
+            }
+          },
+          "coreTools": [
+            "ReadFileTool",
+            "WriteFileTool",
+            "EditFileTool",
+            "ShellTool"
+          ]
+        }
+        EOF
+        
+    - name: 📋 プロンプト計画エージェント (Gemini)
+      id: planning
+      uses: google-gemini/gemini-cli-action@main
+      with:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        prompt: |
+          📋 **プロンプト計画タスク - Gemini Planning エージェント**
+          
+          **基本プロンプト**: ${{ github.event.inputs.base_prompt }}
+          
+          **タスク**: 基本プロンプトから画像生成用と動画生成用の最適化されたプロンプトを作成
+          
+          **実行手順**:
+          1. **ディレクトリ作成**:
+             ```bash
+             mkdir -p ${{ needs.setup-branch.outputs.folder-name }}/planning
+             ```
+             
+          2. **基本プロンプトの分析**:
+             - 主要な要素（オブジェクト、アクション、設定、スタイル）を抽出
+             - 視覚的特徴を明確化
+             - 動きの要素を特定
+             
+          3. **画像生成用プロンプト作成**:
+             - Imagen4 Fast に最適化
+             - 静的な視覚的要素を強調
+             - 高品質な画像生成に必要な詳細を追加
+             - 1行のテキストで作成
+             
+          4. **動画生成用プロンプト作成**:
+             - Hailuo-02 Pro に最適化
+             - 動きの要素を強調
+             - 画像から動画への変換に適した指示
+             - 1行のテキストで作成
+             
+          5. **プロンプト保存**:
+             ```
+             write_file(${{ needs.setup-branch.outputs.folder-name }}/planning/image-prompt.md, 画像生成用プロンプト)
+             write_file(${{ needs.setup-branch.outputs.folder-name }}/planning/video-prompt.md, 動画生成用プロンプト)
+             write_file(${{ needs.setup-branch.outputs.folder-name }}/planning/planning-strategy.md, 計画戦略)
+             ```
+             
+          **プロンプト要件**:
+          - 画像: 静的な美しさ、構図、色彩、質感を重視
+          - 動画: 自然な動き、流れ、変化を重視
+          - 両方とも50-100語程度
+          - 技術的品質向上のキーワードを含む
+          
+          **重要**: 各mdファイルは1行のテキストのみで作成してください
+          
+    - name: Verify planning results
+      id: verify
+      run: |
+        FOLDER_NAME="${{ needs.setup-branch.outputs.folder-name }}"
+        
+        # 画像プロンプトの確認
+        if [ -f "$FOLDER_NAME/planning/image-prompt.md" ]; then
+          IMAGE_PROMPT=$(cat "$FOLDER_NAME/planning/image-prompt.md" | tr '\n' ' ')
+          echo "✅ Image prompt generated: $IMAGE_PROMPT"
+          echo "image-prompt=$IMAGE_PROMPT" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Image prompt file not found"
+          exit 1
+        fi
+        
+        # 動画プロンプトの確認
+        if [ -f "$FOLDER_NAME/planning/video-prompt.md" ]; then
+          VIDEO_PROMPT=$(cat "$FOLDER_NAME/planning/video-prompt.md" | tr '\n' ' ')
+          echo "✅ Video prompt generated: $VIDEO_PROMPT"
+          echo "video-prompt=$VIDEO_PROMPT" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Video prompt file not found"
+          exit 1
+        fi
+        
+        echo "completed=true" >> $GITHUB_OUTPUT
+        
+    - name: Commit planning results
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add .
+        if git diff --cached --quiet; then
+          echo "No planning files to commit"
+        else
+          git commit -m "📋 Add planning results
+          
+          Base prompt: ${{ github.event.inputs.base_prompt }}
+          Generated at: $(date)
+          
+          🤖 Generated with [Claude Code](https://claude.ai/code)
+          
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          git push
+        fi
+
+  generate-image:
+    runs-on: ubuntu-latest
+    needs: [setup-branch, planning]
+    outputs:
+      image-path: ${{ steps.verify.outputs.image-path }}
+      image-url: ${{ steps.verify.outputs.image-url }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.setup-branch.outputs.branch-name }}
+        
+    - name: Create .gemini/settings.json
+      run: |
+        mkdir -p .gemini
+        cat > .gemini/settings.json << EOF
+        {
+          "mcpServers": {
+            "t2i-fal-imagen4-fast": {
+              "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_FAST_URL }}",
+              "timeout": 300000
+            },
+            "i2v-fal-hailuo-02-pro": {
+              "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
+              "timeout": 300000
+            }
+          },
+          "coreTools": [
+            "ReadFileTool",
+            "WriteFileTool",
+            "EditFileTool",
+            "ShellTool"
+          ]
+        }
+        EOF
+
+    - name: 🖼️ 画像生成エージェント (Imagen4 Fast)
+      id: generate
+      uses: google-gemini/gemini-cli-action@main
+      with:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        prompt: |
+          🖼️ **画像生成タスク**
+          
+          **プロンプト**: ${{ needs.planning.outputs.image-prompt }}
+          
+          **手順**:
+          1. ディレクトリ作成: 
+             ```bash
+             mkdir -p ${{ needs.setup-branch.outputs.folder-name }}/images
+             ```
+          
+          2. **重要**: kamuicodeの正しい手順でt2i-fal-imagen4-fastを使用:
+             - `mcp__t2i-fal-imagen4-fast__imagen4_fast_submit` で画像生成開始
+             - `mcp__t2i-fal-imagen4-fast__imagen4_fast_status` でステータス確認  
+             - `mcp__t2i-fal-imagen4-fast__imagen4_fast_result` で結果取得（URLのみ）
+          
+          3. **重要**: MCPサーバーがcurlコマンドを表示するが、**実行はされていない**
+             - "Download command: curl -o ..." は提案であり、実行済みではない
+             - 必ず表示されたcurlコマンドを実際に実行すること
+          
+          4. **ダウンロード実行**: 
+             - MCPサーバーが表示するcurlコマンドは無視
+             - 絶対パスを使用して以下のコマンドを実行:
+             ```bash
+             curl -L -o "$(pwd)/${{ needs.setup-branch.outputs.folder-name }}/images/generated-image.jpg" "[resultツールで取得した画像URL]"
+             ls -la "$(pwd)/${{ needs.setup-branch.outputs.folder-name }}/images/generated-image.jpg"
+             ```
+          
+          5. **画像URL保存（必須）**:
+             - **重要**: 取得した画像URLを必ずファイルに保存すること:
+             ```bash
+             echo "[resultツールで取得した画像URL]" > "${{ needs.setup-branch.outputs.folder-name }}/images/image-url.txt"
+             cat "${{ needs.setup-branch.outputs.folder-name }}/images/image-url.txt"
+             ```
+          
+          **重要**:
+          - MCPサーバーはcurlコマンドを表示するだけ（実行しない）
+          - 必ず実際にcurlコマンドを実行してファイルをダウンロード
+          - ファイル名はgenerated-image.jpgに統一（拡張子注意）
+          
+    - name: Verify image generation
+      id: verify
+      run: |
+        FOLDER_NAME="${{ needs.setup-branch.outputs.folder-name }}"
+        IMAGE_PATH="$FOLDER_NAME/images/generated-image.jpg"
+        IMAGE_URL_FILE="$FOLDER_NAME/images/image-url.txt"
+        
+        echo "🔍 Checking image generation results..."
+        echo "Expected image path: $IMAGE_PATH"
+        echo "Expected URL file: $IMAGE_URL_FILE"
+        
+        # ディレクトリ構造の確認
+        echo "Directory structure:"
+        ls -la "$FOLDER_NAME/" || echo "Folder not found: $FOLDER_NAME"
+        ls -la "$FOLDER_NAME/images/" || echo "Images folder not found"
+        
+        if [ -f "$IMAGE_PATH" ]; then
+          IMAGE_SIZE=$(stat -c%s "$IMAGE_PATH" 2>/dev/null || stat -f%z "$IMAGE_PATH" 2>/dev/null || echo "unknown")
+          echo "✅ Image generated successfully: $IMAGE_PATH ($IMAGE_SIZE bytes)"
+          echo "image-path=$IMAGE_PATH" >> $GITHUB_OUTPUT
+          
+          # 画像URLの確認と出力設定
+          if [ -f "$IMAGE_URL_FILE" ]; then
+            IMAGE_URL=$(cat "$IMAGE_URL_FILE")
+            echo "✅ Image URL found: $IMAGE_URL"
+            echo "image-url=$IMAGE_URL" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Image URL file not found: $IMAGE_URL_FILE"
+            exit 1
+          fi
+        else
+          echo "❌ Image not found at expected path: $IMAGE_PATH"
+          echo "Available files in images directory:"
+          find "$FOLDER_NAME" -type f -name "*.jpg" -o -name "*.png" -o -name "*.jpeg" || echo "No image files found"
+          exit 1
+        fi
+        
+    - name: Commit generated image
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add .
+        if git diff --cached --quiet; then
+          echo "No image files to commit"
+        else
+          git commit -m "🖼️ Add generated Imagen4 image
+          
+          Prompt: ${{ needs.planning.outputs.image-prompt }}
+          Generated at: $(date)
+          
+          🤖 Generated with [Claude Code](https://claude.ai/code)
+          
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          git push
+        fi
+
+  generate-video:
+    runs-on: ubuntu-latest
+    needs: [setup-branch, planning, generate-image]
+    outputs:
+      video-path: ${{ steps.verify.outputs.video-path }}
+      video-url: ${{ steps.verify.outputs.video-url }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.setup-branch.outputs.branch-name }}
+        
+    - name: Create .gemini/settings.json
+      run: |
+        mkdir -p .gemini
+        cat > .gemini/settings.json << EOF
+        {
+          "mcpServers": {
+            "t2i-fal-imagen4-fast": {
+              "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_FAST_URL }}",
+              "timeout": 300000
+            },
+            "i2v-fal-hailuo-02-pro": {
+              "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
+              "timeout": 300000
+            }
+          },
+          "coreTools": [
+            "ReadFileTool",
+            "WriteFileTool",
+            "EditFileTool",
+            "ShellTool"
+          ]
+        }
+        EOF
+
+    - name: 🎬 動画生成エージェント (Hailuo-02 Pro)
+      id: generate
+      uses: google-gemini/gemini-cli-action@main
+      with:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        prompt: |
+          🎬 **動画生成タスク**
+          
+          **入力画像URL**: ${{ needs.generate-image.outputs.image-url }}
+          **動画プロンプト**: ${{ needs.planning.outputs.video-prompt }}
+          
+          **重要**: 画像URLは上記の`${{ needs.generate-image.outputs.image-url }}`を使用すること
+          ローカルファイルパス（file://や相対パス）は使用禁止
+          
+          **手順**:
+          1. ディレクトリ作成:
+             ```bash
+             mkdir -p ${{ needs.setup-branch.outputs.folder-name }}/videos
+             ```
+          
+          2. **重要**: kamuicodeの正しい手順でi2v-fal-hailuo-02-proを使用:
+             - `mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit` で動画生成開始（画像URLとして`${{ needs.generate-image.outputs.image-url }}`を使用）
+             - `mcp__i2v-fal-hailuo-02-pro__hailuo_02_status` でステータス確認
+             - `mcp__i2v-fal-hailuo-02-pro__hailuo_02_result` で結果取得とダウンロード
+          
+          3. **resultツール使用**: `hailuo_02_result`ツールでリクエストIDから動画URLを取得
+             - リクエストIDのみを使用（他のパラメータは不要）
+             - 動画URLが返される（例: https://v3.fal.media/files/...）
+          
+          4. **重要**: MCPサーバーがcurlコマンドを表示するが、**実行はされていない**
+             - "Download command: curl -o ..." は提案であり、実行済みではない
+             - 必ず表示されたcurlコマンドを実際に実行すること
+          
+          5. **ダウンロード実行**: 
+             - MCPサーバーが表示するcurlコマンドは無視
+             - 絶対パスを使用して以下のコマンドを実行:
+             ```bash
+             curl -L -o "$(pwd)/${{ needs.setup-branch.outputs.folder-name }}/videos/generated-video.mp4" "[resultツールで取得した動画URL]"
+             ls -la "$(pwd)/${{ needs.setup-branch.outputs.folder-name }}/videos/generated-video.mp4"
+             ```
+          
+          6. **動画URL保存（必須）**:
+             - **重要**: 取得した動画URLを必ずファイルに保存すること:
+             ```bash
+             echo "[resultツールで取得した動画URL]" > "${{ needs.setup-branch.outputs.folder-name }}/videos/video-url.txt"
+             cat "${{ needs.setup-branch.outputs.folder-name }}/videos/video-url.txt"
+             ```
+          
+          7. ダウンロード完了の確認とファイルサイズ表示
+          
+          **重要**:
+          - MCPサーバーはcurlコマンドを表示するだけ（実行しない）
+          - "⚠️ Important: Execute the above curl command" の警告に従うこと
+          - 必ず実際にcurlコマンドを実行してファイルをダウンロード
+          
+    - name: Verify video generation
+      id: verify
+      run: |
+        FOLDER_NAME="${{ needs.setup-branch.outputs.folder-name }}"
+        VIDEO_PATH="$FOLDER_NAME/videos/generated-video.mp4"
+        VIDEO_URL_FILE="$FOLDER_NAME/videos/video-url.txt"
+        
+        echo "🔍 Checking video generation results..."
+        echo "Expected video path: $VIDEO_PATH"
+        echo "Expected URL file: $VIDEO_URL_FILE"
+        echo "Input image URL was: ${{ needs.generate-image.outputs.image-url }}"
+        
+        # ディレクトリ構造の確認
+        echo "Directory structure:"
+        ls -la "$FOLDER_NAME/" || echo "Folder not found: $FOLDER_NAME"
+        ls -la "$FOLDER_NAME/videos/" || echo "Videos folder not found"
+        
+        if [ -f "$VIDEO_PATH" ]; then
+          VIDEO_SIZE=$(stat -c%s "$VIDEO_PATH" 2>/dev/null || stat -f%z "$VIDEO_PATH" 2>/dev/null || echo "unknown")
+          echo "✅ Video generated successfully: $VIDEO_PATH ($VIDEO_SIZE bytes)"
+          echo "video-path=$VIDEO_PATH" >> $GITHUB_OUTPUT
+          
+          # 動画URLの確認と出力設定
+          if [ -f "$VIDEO_URL_FILE" ]; then
+            VIDEO_URL=$(cat "$VIDEO_URL_FILE")
+            echo "✅ Video URL found: $VIDEO_URL"
+            echo "video-url=$VIDEO_URL" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Video URL file not found: $VIDEO_URL_FILE"
+            exit 1
+          fi
+        else
+          echo "❌ Video not found at expected path: $VIDEO_PATH"
+          echo "Available files in videos directory:"
+          find "$FOLDER_NAME" -type f -name "*.mp4" -o -name "*.webm" -o -name "*.mov" || echo "No video files found"
+          exit 1
+        fi
+        
+    - name: Commit generated video
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add .
+        if git diff --cached --quiet; then
+          echo "No video files to commit"
+        else
+          git commit -m "🎬 Add generated Hailuo-02 video
+          
+          Prompt: ${{ needs.planning.outputs.video-prompt }}
+          Generated at: $(date)
+          
+          🤖 Generated with [Claude Code](https://claude.ai/code)
+          
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          git push
+        fi
+
+  analyze-video:
+    runs-on: ubuntu-latest
+    needs: [setup-branch, planning, generate-image, generate-video]
+    outputs:
+      analysis-completed: ${{ steps.analyze-complete.outputs.completed }}
+      
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.setup-branch.outputs.branch-name }}
+        
+    - name: Create .gemini/settings.json
+      run: |
+        mkdir -p .gemini
+        cat > .gemini/settings.json << EOF
+        {
+          "mcpServers": {
+            "t2i-fal-imagen4-fast": {
+              "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_FAST_URL }}",
+              "timeout": 300000
+            },
+            "i2v-fal-hailuo-02-pro": {
+              "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
+              "timeout": 300000
+            }
+          },
+          "coreTools": [
+            "ReadFileTool",
+            "WriteFileTool",
+            "EditFileTool",
+            "ShellTool"
+          ]
+        }
+        EOF
+
+    - name: 📊 動画分析エージェント (Gemini Vision)
+      id: analyze-video
+      uses: google-gemini/gemini-cli-action@main
+      with:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        prompt: |
+          📊 **動画分析タスク - Gemini Vision エージェント**
+          
+          **タスク**: kamuicodeで生成された動画を視覚的に分析し、品質評価を行う
+          
+          **入力データ**:
+          - **動画URL**: ${{ needs.generate-video.outputs.video-url }}
+          - **画像URL**: ${{ needs.generate-image.outputs.image-url }}
+          - **基本プロンプト**: ${{ github.event.inputs.base_prompt }}
+          - **画像プロンプト**: ${{ needs.planning.outputs.image-prompt }}
+          - **動画プロンプト**: ${{ needs.planning.outputs.video-prompt }}
+          
+          **重要**: もし動画URLが空または"undefined"の場合は、URLが正しく渡されていないことを報告し、可能な範囲で分析を実行してください
+          
+          **分析手順**:
+          1. **ディレクトリ作成**:
+             ```bash
+             mkdir -p ${{ needs.setup-branch.outputs.folder-name }}/analysis
+             ```
+             
+          2. **動画URL確認**:
+             - 動画URLが利用可能かを確認
+             - もし動画URLが空の場合は、エラーメッセージを出力
+             - URLが利用可能な場合は、Gemini Vision APIでアクセス
+             
+          3. **視覚的品質の評価** (1-10点):
+             - 映像のクリアさ・鮮明度
+             - 色彩の豊かさと自然さ
+             - 動きの滑らかさ
+             - 構図とフレーミング
+             - 照明とコントラスト
+             
+          4. **プロンプト適合度の評価** (1-10点):
+             - 基本プロンプト: "${{ github.event.inputs.base_prompt }}"
+             - 画像プロンプトとの一致度評価
+             - 動画プロンプトとの一致度評価
+             - 創造的な解釈の質
+             - 期待される内容との一致度
+             
+          5. **画像から動画への変換品質** (1-10点):
+             - 元画像との一貫性
+             - 動きの自然さと妥当性
+             - 変換の滑らかさ
+             - 画像の要素の保持度
+             
+          6. **技術的品質の評価** (1-10点):
+             - 動画の安定性（手ぶれ等）
+             - フレーム間の連続性
+             - アーティファクトの有無
+             - 全体的な制作品質
+             
+          7. **総合評価とレポート作成**:
+             - 総合スコア（各項目の平均）
+             - 優れている点の箇条書き
+             - 改善可能な点の箇条書き
+             - 推奨される用途
+             
+          8. **分析結果の保存**:
+             ```
+             write_file(${{ needs.setup-branch.outputs.folder-name }}/analysis/video-analysis.md, 詳細な分析レポート)
+             ```
+             
+          **重要**:
+          - Gemini Vision APIを使用して動画URLから直接視覚的内容を分析してください
+          - 具体的な映像内容について詳細にコメントしてください
+          - プロの映像評価者の観点から客観的に評価してください
+          
+    - name: Mark analysis complete
+      id: analyze-complete
+      run: |
+        echo "completed=true" >> $GITHUB_OUTPUT
+        
+    - name: Commit analysis results
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add .
+        if git diff --cached --quiet; then
+          echo "No analysis files to commit"
+        else
+          git commit -m "📊 Add video analysis results
+          
+          Analyzed at: $(date)
+          
+          🤖 Generated with [Claude Code](https://claude.ai/code)
+          
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          git push
+        fi
+
+  create-summary:
+    runs-on: ubuntu-latest
+    needs: [setup-branch, generate-video, analyze-video]
+    if: always()
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ needs.setup-branch.outputs.branch-name }}
+        
+    - name: Create summary
+      run: |
+        FOLDER_NAME="${{ needs.setup-branch.outputs.folder-name }}"
+        cat > "$FOLDER_NAME/README.md" << EOF
+        # Gemini Image-to-Video Generation & Analysis Results
+        
+        ## Overview
+        - **Base Prompt**: ${{ github.event.inputs.base_prompt }}
+        - **Generated At**: $(date)
+        - **Branch**: ${{ needs.setup-branch.outputs.branch-name }}
+        
+        ## Generated Content
+        - **Planning**: \`planning/\` directory
+        - **Image**: \`images/generated-image.jpg\`
+        - **Video**: \`videos/generated-video.mp4\`
+        - **Analysis**: \`analysis/video-analysis.md\`
+        
+        ## Generation Pipeline
+        1. ✅ Planning: Image & Video prompt optimization
+        2. ✅ Image Generation: Imagen4 Fast
+        3. ✅ Video Generation: Hailuo-02 Pro (I2V)
+        4. ✅ Video Analysis: Gemini Vision
+        
+        ---
+        🤖 Generated with [Claude Code](https://claude.ai/code)
+        EOF
+        
+    - name: Commit summary
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add .
+        if git diff --cached --quiet; then
+          echo "No summary files to commit"
+        else
+          git commit -m "📝 Add workflow summary
+          
+          🤖 Generated with [Claude Code](https://claude.ai/code)
+          
+          Co-Authored-By: Claude <noreply@anthropic.com>"
+          git push
+        fi
+
+  create-pull-request:
+    runs-on: ubuntu-latest
+    needs: [setup-branch, create-summary]
+    if: always()
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.PAT_TOKEN || github.token }}
+        
+    - name: Create Pull Request
+      run: |
+        gh pr create \
+          --title "🎬 I2V Generation: ${{ github.event.inputs.base_prompt }}" \
+          --body "$(cat <<'EOF'
+        ## Summary
+        Generated image and video using a 2-stage pipeline with the following base prompt:
+        **${{ github.event.inputs.base_prompt }}**
+        
+        ## Generation Pipeline
+        1. 📋 **Planning**: Gemini optimized prompts for each stage
+        2. 🖼️ **Image**: Imagen4 Fast generation
+        3. 🎬 **Video**: Hailuo-02 Pro I2V conversion
+        4. 📊 **Analysis**: Gemini Vision evaluation
+        
+        ## Generated Files
+        - 📋 Planning: `planning/` directory with optimized prompts
+        - 🖼️ Image: `images/generated-image.jpg`
+        - 🎬 Video: `videos/generated-video.mp4`
+        - 📊 Analysis: `analysis/video-analysis.md`
+        - 📝 Summary: `README.md`
+        
+        ## Workflow Status
+        - ✅ Planning: Completed with Gemini
+        - ✅ Image Generation: Completed with Imagen4 Fast
+        - ✅ Video Generation: Completed with Hailuo-02 Pro
+        - ✅ Video Analysis: Completed with Gemini Vision
+        
+        🤖 Generated with [Claude Code](https://claude.ai/code)
+        EOF
+        )" \
+          --head "${{ needs.setup-branch.outputs.branch-name }}" \
+          --base main
+      env:
+        GH_TOKEN: ${{ secrets.PAT_TOKEN || github.token }}

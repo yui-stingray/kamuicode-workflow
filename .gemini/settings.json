@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "t2i-fal-imagen4-fast": {
+      "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_FAST_URL }}",
+      "timeout": 300000
+    },
+    "i2v-fal-hailuo-02-pro": {
+      "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
+      "timeout": 300000
+    }
+  },
+  "coreTools": [
+    "ReadFileTool",
+    "WriteFileTool", 
+    "EditFileTool",
+    "ShellTool"
+  ]
+}
