@@ -47,4 +47,5 @@ out/
 
 # Coverage
 coverage/
-*.lcov.gemini/settings.json
+*.lcov
+.gemini/
