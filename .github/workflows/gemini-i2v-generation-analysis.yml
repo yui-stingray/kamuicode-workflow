@@ -84,14 +84,12 @@ jobs:
         }
         EOF
         
-    - name: Set GEMINI_API_KEY environment variable
-      run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> $GITHUB_ENV
-
     - name: 📋 プロンプト計画エージェント (Gemini)
       id: planning
       uses: google-gemini/gemini-cli-action@main
-      with:
+      env:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      with:
         prompt: |
           📋 **プロンプト計画タスク - Gemini Planning エージェント**
           
@@ -226,14 +224,12 @@ jobs:
         }
         EOF
 
-    - name: Set GEMINI_API_KEY environment variable
-      run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> $GITHUB_ENV
-
     - name: 🖼️ 画像生成エージェント (Imagen4 Fast)
       id: generate
       uses: google-gemini/gemini-cli-action@main
-      with:
+      env:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      with:
         prompt: |
           🖼️ **画像生成タスク**
           
@@ -373,14 +369,12 @@ jobs:
         }
         EOF
 
-    - name: Set GEMINI_API_KEY environment variable
-      run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> $GITHUB_ENV
-
     - name: 🎬 動画生成エージェント (Hailuo-02 Pro)
       id: generate
       uses: google-gemini/gemini-cli-action@main
-      with:
+      env:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      with:
         prompt: |
           🎬 **動画生成タスク**
           
@@ -530,18 +524,14 @@ jobs:
         }
         EOF
 
-    - name: Set GEMINI_API_KEY environment variable
-      run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> $GITHUB_ENV
-
     - name: 📊 動画分析エージェント (Gemini Vision)
       id: analyze-video
       uses: google-gemini/gemini-cli-action@main
-      with:
+      env:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      with:
         prompt: |
           📊 **動画分析タスク - Gemini Vision エージェント**
-          
-          **タスク**: kamuicodeで生成された動画を視覚的に分析し、品質評価を行う
           
           **入力データ**:
           - **動画URL**: ${{ needs.generate-video.outputs.video-url }}
