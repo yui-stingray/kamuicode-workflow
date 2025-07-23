@@ -78,6 +78,9 @@ jobs:
         }
         EOF
         
+    - name: Set GEMINI_API_KEY environment variable
+      run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> $GITHUB_ENV
+
     - name: 📋 プロンプト計画エージェント (Gemini)
       id: planning
       uses: google-gemini/gemini-cli-action@main
@@ -210,6 +213,9 @@ jobs:
           ]
         }
         EOF
+
+    - name: Set GEMINI_API_KEY environment variable
+      run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> $GITHUB_ENV
 
     - name: 🖼️ 画像生成エージェント (Imagen4 Fast)
       id: generate
@@ -348,6 +354,9 @@ jobs:
           ]
         }
         EOF
+
+    - name: Set GEMINI_API_KEY environment variable
+      run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> $GITHUB_ENV
 
     - name: 🎬 動画生成エージェント (Hailuo-02 Pro)
       id: generate
@@ -497,6 +506,9 @@ jobs:
         }
         EOF
 
+    - name: Set GEMINI_API_KEY environment variable
+      run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> $GITHUB_ENV
+
     - name: 📊 動画分析エージェント (Gemini Vision)
       id: analyze-video
       uses: google-gemini/gemini-cli-action@main
@@ -615,10 +627,10 @@ jobs:
         - **Branch**: ${{ needs.setup-branch.outputs.branch-name }}
         
         ## Generated Content
-        - **Planning**: \`planning/\` directory
-        - **Image**: \`images/generated-image.jpg\`
-        - **Video**: \`videos/generated-video.mp4\`
-        - **Analysis**: \`analysis/video-analysis.md\`
+        - **Planning**: `planning/` directory
+        - **Image**: `images/generated-image.jpg`
+        - **Video**: `videos/generated-video.mp4`
+        - **Analysis**: `analysis/video-analysis.md`
         
         ## Generation Pipeline
         1. ✅ Planning: Image & Video prompt optimization
