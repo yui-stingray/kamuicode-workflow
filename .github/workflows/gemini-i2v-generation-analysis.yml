@@ -90,8 +90,6 @@ jobs:
     - name: 📋 プロンプト計画エージェント (Gemini)
       id: planning
       uses: google-gemini/gemini-cli-action@main
-      env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       with:
         prompt: |
           📋 **プロンプト計画タスク - Gemini Planning エージェント**
@@ -233,8 +231,6 @@ jobs:
     - name: 🖼️ 画像生成エージェント (Imagen4 Fast)
       id: generate
       uses: google-gemini/gemini-cli-action@main
-      env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       with:
         prompt: |
           🖼️ **画像生成タスク**
@@ -381,8 +377,6 @@ jobs:
     - name: 🎬 動画生成エージェント (Hailuo-02 Pro)
       id: generate
       uses: google-gemini/gemini-cli-action@main
-      env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       with:
         prompt: |
           🎬 **動画生成タスク**
@@ -539,8 +533,6 @@ jobs:
     - name: 📊 動画分析エージェント (Gemini Vision)
       id: analyze-video
       uses: google-gemini/gemini-cli-action@main
-      env:
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       with:
         prompt: |
           📊 **動画分析タスク - Gemini Vision エージェント**
