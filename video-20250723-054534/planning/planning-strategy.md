@@ -1,0 +1,1 @@
+Based on the prompt "A cat playing under a beautiful cherry blossom tree," the image prompt emphasizes static beauty with high-resolution details and cinematic lighting for a stunning still, while the video prompt focuses on dynamic actions like "chasing" and "pouncing" and environmental movements like "falling petals" to create a lively animation.
