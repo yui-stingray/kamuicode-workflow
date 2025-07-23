@@ -80,7 +80,10 @@ jobs:
             "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
             "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
             "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result"
-          ]
+          ],
+          "auth": {
+            "apiKey": "${{ secrets.GEMINI_API_KEY }}"
+          }
         }
         EOF
         
@@ -177,7 +180,7 @@ jobs:
           
           🤖 Generated with [Claude Code](https://claude.ai/code)
           
-          Co-Authored-By: Claude <noreply@anthropic.com>"
+          Co-Authored-By: Claude <noreply@anthropic.com)"
           git push
         fi
 
@@ -220,7 +223,10 @@ jobs:
             "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
             "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
             "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result"
-          ]
+          ],
+          "auth": {
+            "apiKey": "${{ secrets.GEMINI_API_KEY }}"
+          }
         }
         EOF
 
@@ -322,7 +328,7 @@ jobs:
           
           🤖 Generated with [Claude Code](https://claude.ai/code)
           
-          Co-Authored-By: Claude <noreply@anthropic.com>"
+          Co-Authored-By: Claude <noreply@anthropic.com)"
           git push
         fi
 
@@ -365,7 +371,10 @@ jobs:
             "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
             "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
             "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result"
-          ]
+          ],
+          "auth": {
+            "apiKey": "${{ secrets.GEMINI_API_KEY }}"
+          }
         }
         EOF
 
@@ -478,7 +487,7 @@ jobs:
           
           🤖 Generated with [Claude Code](https://claude.ai/code)
           
-          Co-Authored-By: Claude <noreply@anthropic.com>"
+          Co-Authored-By: Claude <noreply@anthropic.com)"
           git push
         fi
 
@@ -520,7 +529,10 @@ jobs:
             "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
             "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
             "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result"
-          ]
+          ],
+          "auth": {
+            "apiKey": "${{ secrets.GEMINI_API_KEY }}"
+          }
         }
         EOF
 
@@ -614,7 +626,7 @@ jobs:
           
           🤖 Generated with [Claude Code](https://claude.ai/code)
           
-          Co-Authored-By: Claude <noreply@anthropic.com>"
+          Co-Authored-By: Claude <noreply@anthropic.com)"
           git push
         fi
 
@@ -641,10 +653,10 @@ jobs:
         - **Branch**: ${{ needs.setup-branch.outputs.branch-name }}
         
         ## Generated Content
-        - **Planning**: `planning/` directory
-        - **Image**: `images/generated-image.jpg`
-        - **Video**: `videos/generated-video.mp4`
-        - **Analysis**: `analysis/video-analysis.md`
+        - **Planning**: \`planning/\` directory
+        - **Image**: \`images/generated-image.jpg\`
+        - **Video**: \`videos/generated-video.mp4\`
+        - **Analysis**: \`analysis/video-analysis.md\`
         
         ## Generation Pipeline
         1. ✅ Planning: Image & Video prompt optimization
@@ -668,7 +680,7 @@ jobs:
           
           🤖 Generated with [Claude Code](https://claude.ai/code)
           
-          Co-Authored-By: Claude <noreply@anthropic.com>"
+          Co-Authored-By: Claude <noreply@anthropic.com)"
           git push
         fi
 
