@@ -1,0 +1,1 @@
+A dynamic, sweeping aerial drone shot that spirals and whirls 360 degrees around the central orbital elevator. The camera smoothly ascends, revealing the vast scale of the futuristic Tokyo cityscape below. The movement should be fluid and cinematic, capturing the dizzying height and bustling energy of the scene, with clouds and flying vehicles adding to the sense of motion.

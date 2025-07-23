@@ -1,18 +1,27 @@
 {
   "mcpServers": {
     "t2i-fal-imagen4-fast": {
-      "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_FAST_URL }}",
+      "httpUrl": "https://mcp-creatify-lipsync-20250719-010824-a071b7b8-820994673238.us-central1.run.app/t2i/fal/imagen4/fast",
       "timeout": 300000
     },
     "i2v-fal-hailuo-02-pro": {
-      "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
+      "httpUrl": "https://mcp-creatify-lipsync-20250719-010824-a071b7b8-820994673238.us-central1.run.app/i2v/fal/minimax/hailuo-02/pro",
       "timeout": 300000
     }
   },
   "coreTools": [
     "ReadFileTool",
-    "WriteFileTool", 
+    "WriteFileTool",
     "EditFileTool",
-    "ShellTool"
-  ]
+    "ShellTool",
+    "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+    "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+    "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+    "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+    "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+    "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result"
+  ],
+  "auth": {
+    "apiKey": "AIzaSyCc6XbhLQSYHQ4x_z058m1H00-7Txwt2h0"
+  }
 }
