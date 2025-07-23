@@ -91,6 +91,7 @@ jobs:
       id: planning
       uses: google-gemini/gemini-cli-action@main
       with:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         prompt: |
           📋 **プロンプト計画タスク - Gemini Planning エージェント**
           
@@ -232,6 +233,7 @@ jobs:
       id: generate
       uses: google-gemini/gemini-cli-action@main
       with:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         prompt: |
           🖼️ **画像生成タスク**
           
@@ -378,6 +380,7 @@ jobs:
       id: generate
       uses: google-gemini/gemini-cli-action@main
       with:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         prompt: |
           🎬 **動画生成タスク**
           
@@ -534,6 +537,7 @@ jobs:
       id: analyze-video
       uses: google-gemini/gemini-cli-action@main
       with:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         prompt: |
           📊 **動画分析タスク - Gemini Vision エージェント**
           
