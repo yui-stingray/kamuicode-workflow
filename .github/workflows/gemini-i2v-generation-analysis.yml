@@ -245,56 +245,41 @@ jobs:
              mkdir -p ${{ needs.setup-branch.outputs.folder-name }}/images
              ```
           
-          2. **重要**: kamuicodeの正しい手順でt2i-fal-imagen4-fastを使用:
-             - `mcp__t2i-fal-imagen4-fast__imagen4_fast_submit` で画像生成開始
-             - `mcp__t2i-fal-imagen4-fast__imagen4_fast_status` でステータス確認  
-             - `mcp__t2i-fal-imagen4-fast__imagen4_fast_result` で結果取得（URLのみ）
-          
-          3. **重要**: MCPサーバーがcurlコマンドを表示するが、**実行はされていない**
-             - "Download command: curl -o ..." は提案であり、実行済みではない
-             - 必ず表示されたcurlコマンドを実際に実行すること
-          
-          4. **ダウンロード実行**: 
-             - MCPサーバーが表示するcurlコマンドは無視
-             - 絶対パスを使用して以下のコマンドを実行:
-             ```bash
-             curl -L -o "$(pwd)/${{ needs.setup-branch.outputs.folder-name }}/images/generated-image.jpg" "[resultツールで取得した画像URL]"
-             ls -la "$(pwd)/${{ needs.setup-branch.outputs.folder-name }}/images/generated-image.jpg"
-             ```
-          
-          5. **画像URL保存（必須）**:
-             - **重要**: 取得した画像URLを必ずファイルに保存すること:
-             ```bash
-             echo "[resultツールで取得した画像URL]" > "${{ needs.setup-branch.outputs.folder-name }}/images/image-url.txt"
-             cat "${{ needs.setup-branch.outputs.folder-name }}/images/image-url.txt"
-             ```
-          
-          **重要**:
-          - MCPサーバーはcurlコマンドを表示するだけ（実行しない）
-          - 必ず実際にcurlコマンドを実行してファイルをダウンロード
-          - ファイル名はgenerated-image.jpgに統一（拡張子注意）
+          2. **重要**: kamuicodeの正しい手順でt2i-fal-imagen4-fastを使用し、画像を生成・ダウンロードします。
+             - `mcp__t2i-fal-imagen4-fast__imagen4_fast_submit` を使用して画像生成リクエストを送信し、`request_id` を取得します。
+             - `mcp__t2i-fal-imagen4-fast__imagen4_fast_status` を使用して、`request_id` のステータスが `completed` になるまでポーリングします。
+             - `mcp__t2i-fal-imagen4-fast__imagen4_fast_result` を使用して、生成された画像をダウンロードします。
+               - `request_id` は前のステップで取得したものを使用します。
+               - `output_directory` は `$(pwd)/${{ needs.setup-branch.outputs.folder-name }}/images/` に設定します。
+               - `filename_prefix` は `generated-image` に設定します。
+               - このツールはダウンロードされたファイルのパスと、その画像のURLを返します。
+             - ダウンロードされたファイルの実際のパスを確認するために `ls -la` コマンドを実行してください。
+             - **重要**: `mcp__t2i-fal-imagen4-fast__imagen4_fast_result` ツールが返す画像のURLを、`echo "[画像URL]" > "${{ needs.setup-branch.outputs.folder-name }}/images/image-url.txt"` コマンドで `image-url.txt` ファイルに保存してください。
           
     - name: Verify image generation
       id: verify
       run: |
         FOLDER_NAME="${{ needs.setup-branch.outputs.folder-name }}"
-        IMAGE_PATH="$FOLDER_NAME/images/generated-image.jpg"
+        IMAGE_DIR="$FOLDER_NAME/images"
         IMAGE_URL_FILE="$FOLDER_NAME/images/image-url.txt"
-        
+
         echo "🔍 Checking image generation results..."
-        echo "Expected image path: $IMAGE_PATH"
         echo "Expected URL file: $IMAGE_URL_FILE"
-        
+
         # ディレクトリ構造の確認
         echo "Directory structure:"
         ls -la "$FOLDER_NAME/" || echo "Folder not found: $FOLDER_NAME"
-        ls -la "$FOLDER_NAME/images/" || echo "Images folder not found"
-        
-        if [ -f "$IMAGE_PATH" ]; then
+        ls -la "$IMAGE_DIR/" || echo "Images folder not found"
+
+        # generated-image.* の形式でファイルを検索
+        IMAGE_FILE=$(find "$IMAGE_DIR" -maxdepth 1 -type f -name "generated-image.*" | head -n 1)
+
+        if [ -n "$IMAGE_FILE" ]; then
+          IMAGE_PATH="$IMAGE_FILE"
           IMAGE_SIZE=$(stat -c%s "$IMAGE_PATH" 2>/dev/null || stat -f%z "$IMAGE_PATH" 2>/dev/null || echo "unknown")
           echo "✅ Image generated successfully: $IMAGE_PATH ($IMAGE_SIZE bytes)"
           echo "image-path=$IMAGE_PATH" >> $GITHUB_OUTPUT
-          
+
           # 画像URLの確認と出力設定
           if [ -f "$IMAGE_URL_FILE" ]; then
             IMAGE_URL=$(cat "$IMAGE_URL_FILE")
@@ -305,9 +290,9 @@ jobs:
             exit 1
           fi
         else
-          echo "❌ Image not found at expected path: $IMAGE_PATH"
+          echo "❌ Image not found in expected directory: $IMAGE_DIR"
           echo "Available files in images directory:"
-          find "$FOLDER_NAME" -type f -name "*.jpg" -o -name "*.png" -o -name "*.jpeg" || echo "No image files found"
+          find "$IMAGE_DIR" -type f -name "*.jpg" -o -name "*.png" -o -name "*.jpeg" || echo "No image files found"
           exit 1
         fi
         
