@@ -4,18 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       lyrics:
-        description: '
-歌詞 (各行は改行で区切ってください)'
+        description: '歌詞 (各行は改行で区切ってください)'
         required: true
         type: string
       style:
-        description: '
-音楽と画像の全体的なスタイル (例: 水彩画風, アニメ, サイバーパンク)'
+        description: '音楽と画像の全体的なスタイル (例: 水彩画風, アニメ, サイバーパンク)'
         required: true
         type: string
       tempo:
-        description: '
-音楽のテンポ (例: スロー, 80 BPM, アップビート)'
+        description: '音楽のテンポ (例: スロー, 80 BPM, アップビート)'
         required: true
         type: string
 
