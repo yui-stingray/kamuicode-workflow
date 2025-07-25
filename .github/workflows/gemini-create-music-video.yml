@@ -1,0 +1,192 @@
+name: Gemini-Native Create Music Video
+
+on:
+  workflow_dispatch:
+    inputs:
+      lyrics:
+        description: '歌詞 (各行は改行で区切ってください)'
+        required: true
+        type: string
+      style:
+        description: '音楽と画像の全体的なスタイル (例: 水彩画風, アニメ, サイバーパンク)'
+        required: true
+        type: string
+      tempo:
+        description: '音楽のテンポ (例: スロー, 80 BPM, アップビート)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      branch-name: ${{ steps.setup.outputs.branch-name }}
+      folder-name: ${{ steps.setup.outputs.folder-name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Create unique branch and folder
+        id: setup
+        run: |
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          SAFE_STYLE=$(echo "${{ github.event.inputs.style }}" | sed 's/[^a-zA-Z0-9]/-/g')
+          BRANCH_NAME="mv/${SAFE_STYLE}-${TIMESTAMP}"
+          FOLDER_NAME="music-videos/${TIMESTAMP}-${SAFE_STYLE}"
+          echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "folder-name=$FOLDER_NAME" >> $GITHUB_OUTPUT
+          git checkout -b "$BRANCH_NAME"
+          git push -u origin "$BRANCH_NAME"
+
+  plan:
+    runs-on: ubuntu-latest
+    needs: setup
+    outputs:
+      plan-path: ${{ steps.gemini-plan.outputs.plan_path }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.setup.outputs.branch-name }}
+      - name: Create .gemini/settings.json
+        run: |
+          mkdir -p .gemini
+          cat > .gemini/settings.json << EOF
+          { "auth": { "apiKey": "${{ secrets.GEMINI_API_KEY }}" } }
+          EOF
+      - name: 🤖 Run Gemini Creative Director Agent
+        id: gemini-plan
+        uses: google-gemini/gemini-cli-action@main
+        with:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          prompt: |
+            あなたはミュージックビデオのクリエイティブディレクターAIです。
+            提供された情報に基づき、詳細な制作計画を**単一のJSONオブジェクト**として出力してください。
+            **入力:**
+            - 歌詞: "${{ github.event.inputs.lyrics }}"
+            - スタイル: "${{ github.event.inputs.style }}"
+            - テンポ: "${{ github.event.inputs.tempo }}"
+            **タスク:**
+            1. 音楽生成(Lyria)用の詳細なプロンプトを作成してください。
+            2. 歌詞を分析し、各行に対応する画像生成(Imagen)用の創造的なプロンプトを作成してください。
+            3. 全ての計画を、以下の構造を持つJSONとして、`${{ needs.setup.outputs.folder-name }}/production_plan.json` ファイルに保存してください。
+            **JSON構造:**
+            ```json
+            {
+              "music_prompt": "A gentle, melancholic piano melody, slow tempo, with subtle string undertones, evoking a sense of nostalgic anime.",
+              "scenes": [
+                { "lyrics": "一番星、夜空に光る。", "image_prompt": "A breathtakingly beautiful anime-style illustration of a single, brilliant first star appearing in a deep indigo twilight sky." },
+                { "lyrics": "君との思い出、心に灯る。", "image_prompt": "A warm, nostalgic anime scene. Two figures on a hill looking at the starry sky, a gentle light emanating from their hearts." }
+              ]
+            }
+            ```
+            **重要:** 必ず `production_plan.json` を作成し、その絶対パスを `plan_path` という名前で出力してください。
+      - name: Commit production plan
+        run: |
+          git config --global user.name "gemini-agent[bot]"
+          git config --global user.email "gemini-agent[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "feat(plan): 📋 Create music video production plan"
+          git push
+
+  generate-assets:
+    runs-on: ubuntu-latest
+    needs: [setup, plan]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.setup.outputs.branch-name }}
+      - name: Create .gemini/settings.json
+        run: |
+          mkdir -p .gemini
+          cat > .gemini/settings.json << EOF
+          { "auth": { "apiKey": "${{ secrets.GEMINI_API_KEY }}" } }
+          EOF
+      - name: 🤖 Run Gemini Asset Generation Agent
+        uses: google-gemini/gemini-cli-action@main
+        with:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          prompt: |
+            あなたはマルチメディア生成AIです。
+            提供された制作計画JSONファイル (`${{ needs.plan.outputs.plan_path }}`) に基づいて、音楽と**すべての画像**を生成してください。
+            **タスク:**
+            1.  `ReadFileTool` を使って `${{ needs.plan.outputs.plan_path }}` の内容を読み込み、JSONをパースしてください。
+            2.  `music_prompt` の値を使って `lyria_generate` ツールを実行し、音楽を `${{ needs.setup.outputs.folder-name }}/music.wav` として保存してください。
+            3.  `scenes` 配列を**ループ処理**してください。各シーンについて:
+                a. `image_prompt` の値を使って `imagen_t2i` ツールを実行してください。
+                b. 生成された画像を `${{ needs.setup.outputs.folder-name }}/image_${INDEX}.png` のように連番で保存してください（INDEXは0から始まる番号）。
+            4.  すべてのタスクが完了したら、成功した旨を報告してください。
+      - name: Commit generated assets
+        run: |
+          git config --global user.name "gemini-agent[bot]"
+          git config --global user.email "gemini-agent[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "feat(assets): 🎨 Generate music and image assets"
+          git push
+
+  assemble:
+    runs-on: ubuntu-latest
+    needs: [setup, generate-assets]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.setup.outputs.branch-name }}
+      - name: Setup FFmpeg and SoX
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg sox
+      - name: Create .gemini/settings.json
+        run: |
+          mkdir -p .gemini
+          cat > .gemini/settings.json << EOF
+          { "auth": { "apiKey": "${{ secrets.GEMINI_API_KEY }}" } }
+          EOF
+      - name: 🤖 Run Gemini Video Editor Agent
+        uses: google-gemini/gemini-cli-action@main
+        with:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          prompt: |
+            あなたはビデオ編集の専門家AIです。
+            `${{ needs.setup.outputs.folder-name }}` ディレクトリにある音楽と画像アセットを結合し、一つの完成したミュージックビデオを作成してください。
+            **タスク:**
+            1. `soxi -D ${{ needs.setup.outputs.folder-name }}/music.wav` を実行し、音楽の長さを秒で取得してください。
+            2. `ls -1 ${{ needs.setup.outputs.folder-name }}/image_*.png | wc -l` を実行し、画像の枚数を数えてください。
+            3. 音楽の長さと画像の枚数から、各画像の表示時間を計算してください。
+            4. 計算結果を元に、`ffmpeg` コマンドを構築してください。画像間にはクロスフェード効果(`xfade`)を適用し、プロ品質の滑らかなトランジションを実現してください。
+            5. 最終的なビデオを `${{ needs.setup.outputs.folder-name }}/final_video.mp4` として保存してください。
+      - name: Commit final video
+        run: |
+          git config --global user.name "gemini-agent[bot]"
+          git config --global user.email "gemini-agent[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "feat(video): 🎬 Assemble final music video"
+          git push
+
+  create-pr:
+    runs-on: ubuntu-latest
+    needs: [setup, assemble]
+    steps:
+      - name: Create Pull Request
+        run: |
+          PR_BODY=$(cat <<EOF
+          🎵 **New AI-Generated Music Video is Ready!**
+
+          This pull request contains the complete music video generated based on your request.
+          ### Details
+          - **Style:** ${{ github.event.inputs.style }}
+          - **Tempo:** ${{ github.event.inputs.tempo }}
+          ### Lyrics
+          > ${{ github.event.inputs.lyrics }}
+          Please review the generated files in the \`${{ needs.setup.outputs.folder-name }}\` directory.
+          EOF
+          )
+          gh pr create \
+            --title "🎵 New Music Video: ${{ github.event.inputs.style }}" \
+            --body "$PR_BODY" \
+            --base main \
+            --head "${{ needs.setup.outputs.branch-name }}"
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN || github.token }}
