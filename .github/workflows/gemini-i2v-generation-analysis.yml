@@ -281,7 +281,11 @@ jobs:
         ls -la "$IMAGE_DIR/" || echo "Images folder not found"
 
         # generated-image.* の形式でファイルを検索
-        IMAGE_FILE=$(find "$IMAGE_DIR" -maxdepth 1 -type f -name "generated-image.*" | head -n 1)
+        IMAGE_FILE=$(find "$IMAGE_DIR" -maxdepth 1 -type f -name "generated-image.*" -print -quit)
+        if [ -z "$IMAGE_FILE" ]; then
+          # generated-image.* が見つからない場合、generated-image_*.png を試す
+          IMAGE_FILE=$(find "$IMAGE_DIR" -maxdepth 1 -type f -name "generated-image_*.png" -print -quit)
+        fi
         echo "DEBUG: Value of IMAGE_FILE: '$IMAGE_FILE'" # Add debug output
 
         if [ -n "$IMAGE_FILE" ]; then
@@ -404,7 +408,7 @@ jobs:
              - "Download command: curl -o ..." は提案であり、実行済みではない
              - 必ず表示されたcurlコマンドを実際に実行すること
           
-          5. **ダウンロード実行**: 
+          5. **ダウンロード実行**:
              - MCPサーバーが表示するcurlコマンドは無視
              - 絶対パスを使用して以下のコマンドを実行:
              ```bash
