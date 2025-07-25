@@ -253,12 +253,21 @@ jobs:
                - `output_directory` は `$(pwd)/${{ needs.setup-branch.outputs.folder-name }}/images/` に設定します。
                - `filename_prefix` は `generated-image` に設定します。
                - このツールはダウンロードされたファイルのパスと、その画像のURLを返します。
-             - ダウンロードされたファイルの実際のパスを確認するために `ls -la` コマンドを実行してください。
-             - **重要**: `mcp__t2i-fal-imagen4-fast__imagen4_fast_result` ツールが返す画像のURLを、`echo "[画像URL]" > "${{ needs.setup-branch.outputs.folder-name }}/images/image-url.txt"` コマンドで `image-url.txt` ファイルに保存してください。
-          
+             - **ダウンロードされたファイルのパスとURLを正確に取得し、以下のファイルに保存してください。**
+             ```bash
+             # 例: result_output_variable は mcp__t2i-fal-imagen4-fast__imagen4_fast_result の出力
+             # ダウンロードされたファイルのパスを image-path.txt に保存
+             echo "[ダウンロードされたファイルのパス]" > "${{ needs.setup-branch.outputs.folder-name }}/images/image-path.txt"
+             # ダウンロードされた画像のURLを image-url.txt に保存
+             echo "[ダウンロードされた画像のURL]" > "${{ needs.setup-branch.outputs.folder-name }}/images/image-url.txt"
+             ```
+             - **重要**: `image-path.txt` にはダウンロードされた画像の**絶対パス**を、`image-url.txt` には画像の**URL**を保存してください。
+             - `ls -la` コマンドでダウンロードされたファイルの存在を確認してください。
+
     - name: Verify image generation
       id: verify
       run: |
+        set -x # Enable debugging output
         FOLDER_NAME="${{ needs.setup-branch.outputs.folder-name }}"
         IMAGE_DIR="$FOLDER_NAME/images"
         IMAGE_URL_FILE="$FOLDER_NAME/images/image-url.txt"
@@ -273,6 +282,7 @@ jobs:
 
         # generated-image.* の形式でファイルを検索
         IMAGE_FILE=$(find "$IMAGE_DIR" -maxdepth 1 -type f -name "generated-image.*" | head -n 1)
+        echo "DEBUG: Value of IMAGE_FILE: '$IMAGE_FILE'" # Add debug output
 
         if [ -n "$IMAGE_FILE" ]; then
           IMAGE_PATH="$IMAGE_FILE"
@@ -292,7 +302,7 @@ jobs:
         else
           echo "❌ Image not found in expected directory: $IMAGE_DIR"
           echo "Available files in images directory:"
-          find "$IMAGE_DIR" -type f -name "*.jpg" -o -name "*.png" -o -name "*.jpeg" || echo "No image files found"
+          find "$FOLDER_NAME" -type f -name "*.jpg" -o -name "*.png" -o -name "*.jpeg" || echo "No image files found"
           exit 1
         fi
         
@@ -643,7 +653,7 @@ jobs:
         1. ✅ Planning: Image & Video prompt optimization
         2. ✅ Image Generation: Imagen4 Fast
         3. ✅ Video Generation: Hailuo-02 Pro (I2V)
-        4. ✅ Video Analysis: Gemini Vision
+        4. ✅ Image Analysis: Gemini Vision
         
         ---
         🤖 Generated with [Claude Code](https://claude.ai/code)
