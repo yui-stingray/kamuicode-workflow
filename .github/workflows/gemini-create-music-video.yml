@@ -326,7 +326,7 @@ jobs:
             {
               "music_file": "music-videos/YYYYMMDD-HHMMSS-STYLE/actual_music_filename.wav",
               "image_files": [
-                "music-videos/YYYYMMSS-STYLE/actual_image_0.png",
+                "music-videos/YYYYMMDD-HHMMSS-STYLE/actual_image_0.png",
                 "music-videos/YYYYMMSS-STYLE/actual_image_1.png"
               ]
             }
