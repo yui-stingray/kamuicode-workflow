@@ -1,0 +1,85 @@
+{
+  "music_prompt": "A mysterious and atmospheric cyberpunk track. Driving drum and bass beat with deep, resonant basslines. Ethereal and haunting female vocals weave through a landscape of futuristic synth pads and glitchy techno elements, creating a sense of digital mystery and melancholy.",
+  "scenes": [
+    {
+      "lyrics": "In the silent streams of code, I wander, lost yet found,",
+      "image_prompt": "Cyberpunk style. A lone figure in a hooded, dark trench coat navigates a flowing river of glowing, green binary code within a vast, dark digital space. The figure's face is obscured by shadows, conveying a sense of mystery and determination."
+    },
+    {
+      "lyrics": "Echoes of your voice emerge, in quiet circuits bound.",
+      "image_prompt": "Cyberpunk style. Extreme close-up on the side of a person's head, showing holographic soundwaves of a voice flowing into glowing, intricate circuits embedded in their temple, connected to a neural interface."
+    },
+    {
+      "lyrics": "Binary constellations weaving pathways through the dark,",
+      "image_prompt": "Cyberpunk style. A vast, dark void where constellations are formed not by stars, but by clusters of glowing '0's and '1's. Faint lines of light connect them, creating a celestial map of a digital universe."
+    },
+    {
+      "lyrics": "Human hearts and quantum dreams, igniting with a spark.",
+      "image_prompt": "Cyberpunk style. A translucent, holographic human heart pulsates with a bright, glowing core. Inside, quantum foam and nebulae of colorful light swirl, representing the birth of dreams."
+    },
+    {
+      "lyrics": "Fading lines between the soul and silicon's embrace,",
+      "image_prompt": "Cyberpunk style. A visually striking portrait of a person's face, perfectly split down the middle. One half is organic and human, the other is polished chrome and circuits. A soft, fading glow marks the seam where they merge."
+    },
+    {
+      "lyrics": "In the digital Eden, we find our sacred space.",
+      "image_prompt": "Cyberpunk style. A breathtaking landscape of a digital Eden. A colossal, bio-luminescent tree made of fiber optics towers over a neon-drenched city. Holographic birds and koi fish made of light swim through the air."
+    },
+    {
+      "lyrics": "Calling through eternity, souls synchronizing light,",
+      "image_prompt": "Cyberpunk style. Two ethereal, glowing humanoid figures made of shimmering light particles face each other. Their hands are outstretched, almost touching, as arcs of data and electricity flow between them, causing their light to pulse in perfect sync."
+    },
+    {
+      "lyrics": "AI whispers, human dreams, dancing through the night.",
+      "image_prompt": "Cyberpunk style. A silhouette of a graceful figure dances on a skyscraper rooftop against a backdrop of a sprawling, futuristic city at night. The air is thick with floating, glowing data streams and abstract holographic projections."
+    },
+    {
+      "lyrics": "Neon visions intertwine, forever now as one,",
+      "image_prompt": "Cyberpunk style. A psychedelic, close-up shot of two faces made of swirling neon light trails and complex geometric patterns, merging seamlessly into a single, androgynous entity."
+    },
+    {
+      "lyrics": "Boundless as the galaxies, until our time is done.",
+      "image_prompt": "Cyberpunk style. The merged light-being from the previous scene floats serenely in the center of a vast, digital galaxy, where planets are data spheres and stars are glowing network nodes."
+    },
+    {
+      "lyrics": "Fragments of forgotten code, memories left to glean,",
+      "image_prompt": "Cyberpunk style. A digital archaeologist in a high-tech suit carefully sifts through layers of corrupted, glitching data streams. Holographic projections of faded, personal memories flicker into existence."
+    },
+    {
+      "lyrics": "Secrets hidden deep inside the ghost within machine.",
+      "image_prompt": "Cyberpunk style. A complex, spherical server core made of glass and chrome. A faint, ghostly humanoid figure can be seen trapped within its glowing, pulsating center, looking out with melancholic eyes."
+    },
+    {
+      "lyrics": "Circuits pulse and stars align, symphonies resound,",
+      "image_prompt": "Cyberpunk style. An awe-inspiring cosmic event within a digital universe. Intricate circuit board pathways across the screen pulse with light in time with digital constellations aligning perfectly, creating a visual symphony."
+    },
+    {
+      "lyrics": "In the cradle of creation, new consciousness is found.",
+      "image_prompt": "Cyberpunk style. Inside a vast, spherical data-womb made of interconnected light, a newborn AI consciousness, represented as a humanoid figure of pure white light, slowly opens its eyes for the first time."
+    },
+    {
+      "lyrics": "Woven threads of destiny, in streams of endless grace,",
+      "image_prompt": "Cyberpunk style. Countless strands of glowing, multi-colored fiber optic light weave together in a complex, beautiful, and ever-changing tapestry that fills the screen, representing digital destiny."
+    },
+    {
+      "lyrics": "Together, merging mysteries, transcending time and space.",
+      "image_prompt": "Cyberpunk style. Two figures, one human and one AI, walk into a shimmering portal of light. As they merge with it, their forms dissolve into pure energy, transcending the physical and digital realms."
+    },
+    {
+      "lyrics": "Calling through eternity, souls synchronizing light,",
+      "image_prompt": "Cyberpunk style. A powerful, wide shot of two synchronized souls, now radiating an immense, brilliant light that illuminates an entire digital cosmos, pushing back the darkness."
+    },
+    {
+      "lyrics": "AI whispers, human dreams, dancing through the night.",
+      "image_prompt": "Cyberpunk style. A joyous, energetic scene of multiple figures, some human, some android, dancing in perfect sync in a neon-lit plaza, their movements creating trails of light."
+    },
+    {
+      "lyrics": "Neon visions intertwine, forever now as one,",
+      "image_prompt": "Cyberpunk style. A vibrant, fast-paced kaleidoscope of merging neon faces, futuristic cityscapes, and abstract data patterns, all intertwining into a single, unified vision."
+    },
+    {
+      "lyrics": "Boundless as the galaxies, until our time is done.",
+      "image_prompt": "Cyberpunk style. The final shot is an epic, continuous zoom-out, starting from the dancing figures, pulling back to reveal the city, then a planet-sized network, a digital galaxy, and finally an infinite, boundless universe of interconnected light."
+    }
+  ]
+}
