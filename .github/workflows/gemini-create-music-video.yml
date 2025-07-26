@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup
     outputs:
-      plan-path: ${{ steps.gemini-plan.outputs.plan_path }}
+      plan-path: ${{ steps.extract-plan-path.outputs.plan_path }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -67,10 +67,6 @@ jobs:
               },
               "r2v-fal-vidu-q1": {
                 "httpUrl": "${{ secrets.MCP_R2V_FAL_VIDU_Q1_URL }}",
-                "timeout": 300000
-              },
-              "t2v-fal-veo3-fast": {
-                "httpUrl": "${{ secrets.MCP_T2V_F2V_FAST_URL }}",
                 "timeout": 300000
               },
               "i2v-fal-hailuo-02-pro": {
@@ -117,9 +113,6 @@ jobs:
                 "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
                 "mcp__r2v-fal-vidu-q1__vidu_q1_status",
                 "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_status",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_result",
                 "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
                 "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
                 "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
@@ -140,9 +133,6 @@ jobs:
               "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
               "mcp__r2v-fal-vidu-q1__vidu_q1_status",
               "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_status",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_result",
               "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
               "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
               "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
@@ -183,6 +173,11 @@ jobs:
             **厳格な出力ルール:**
             - **絶対に、いかなる自然言語のテキスト（例：「はい、承知いたしました」など）もJSONの前後に含めないでください。**
             - **出力は、`{` で始まり `}` で終わる、単一の有効なJSONオブジェクトでなければなりません。**
+      - name: Extract plan_path from Gemini output
+        id: extract-plan-path
+        run: |
+          PLAN_PATH=$(echo "${{ steps.gemini-plan.outputs.gemini_result }}" | grep -o '"plan_path": "[^"]*"' | cut -d '"' -f 4)
+          echo "plan_path=$PLAN_PATH" >> $GITHUB_OUTPUT
       - name: Commit production plan
         run: |
           git config --global user.name "gemini-agent[bot]"
@@ -218,10 +213,6 @@ jobs:
               },
               "r2v-fal-vidu-q1": {
                 "httpUrl": "${{ secrets.MCP_R2V_FAL_VIDU_Q1_URL }}",
-                "timeout": 300000
-              },
-              "t2v-fal-veo3-fast": {
-                "httpUrl": "${{ secrets.MCP_T2V_F2V_FAST_URL }}",
                 "timeout": 300000
               },
               "i2v-fal-hailuo-02-pro": {
@@ -268,9 +259,6 @@ jobs:
                 "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
                 "mcp__r2v-fal-vidu-q1__vidu_q1_status",
                 "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_status",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_result",
                 "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
                 "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
                 "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
@@ -291,9 +279,6 @@ jobs:
               "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
               "mcp__r2v-fal-vidu-q1__vidu_q1_status",
               "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_status",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_result",
               "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
               "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
               "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
@@ -311,9 +296,9 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           prompt: |
             あなたはマルチメディア生成AIです。
-            提供された制作計画JSONファイル (`${{ needs.plan.outputs.plan_path }}`) に基づいて、音楽と**すべての画像**を生成してください。
+            提供された制作計画JSONファイル (`${{ needs.plan.outputs.plan-path }}`) に基づいて、音楽と**すべての画像**を生成してください。
             **タスク:**
-            1.  `ReadFileTool` を使って `${{ needs.plan.outputs.plan_path }}` の内容を読み込み、JSONをパースしてください。
+            1.  `ReadFileTool` を使って `${{ needs.plan.outputs.plan-path }}` の内容を読み込み、JSONをパースしてください。
             2.  `music_prompt` の値を使って `lyria_generate` ツールを実行し、音楽を生成してください。
                 *   生成リクエストの `request_id` を取得し、`t2m-google-lyria__lyria_status` で完了をポーリングしてください。
                 *   完了後、`t2m-google-lyria__lyria_result` ツールを使って、`${{ needs.setup.outputs.folder-name }}` を `output_directory` として指定し、音楽ファイルをダウンロードしてください。**このツールの戻り値から、実際に保存された音楽ファイルの絶対パスを取得してください。**
