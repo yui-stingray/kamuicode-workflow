@@ -311,21 +311,27 @@ jobs:
             提供された制作計画JSONファイル (`${{ needs.plan.outputs.plan_path }}`) に基づいて、音楽と**すべての画像**を生成してください。
             **タスク:**
             1.  `ReadFileTool` を使って `${{ needs.plan.outputs.plan_path }}` の内容を読み込み、JSONをパースしてください。
-            2.  `music_prompt` の値を使って `lyria_generate` ツールを実行し、音楽を `${{ needs.setup.outputs.folder-name }}/music.wav` として保存してください。**ツールの制約により指定されたファイル名で保存できない場合、ツールが実際に保存したファイル名を正確に報告してください。**
+            2.  `music_prompt` の値を使って `lyria_generate` ツールを実行し、音楽を生成してください。
+                *   生成リクエストの `request_id` を取得し、`t2m-google-lyria__lyria_status` で完了をポーリングしてください。
+                *   完了後、`t2m-google-lyria__lyria_result` ツールを使って、`${{ needs.setup.outputs.folder-name }}` を `output_directory` として指定し、音楽ファイルをダウンロードしてください。**このツールの戻り値から、実際に保存された音楽ファイルの絶対パスを取得してください。**
             3.  `scenes` 配列を**ループ処理**してください。各シーンについて:
-                a. `image_prompt` の値を使って `imagen_t2i` ツールを実行してください。
-                b. 生成された画像を `${{ needs.setup.outputs.folder-name }}/image_${INDEX}.png` のように連番で保存してください（INDEXは0から始まる番号）。**ツールの制約により指定されたファイル名で保存できない場合、ツールが実際に保存したファイル名を正確に報告してください。**
-            4.  すべてのタスクが完了したら、生成された音楽ファイルと画像ファイルの**実際のパスのリスト**を含むJSONオブジェクトを**標準出力にのみ**出力してください。**余計な会話や説明は一切含めないでください。**
+                a. `image_prompt` の値を使って `mcp__t2i-fal-imagen4-fast__imagen4_fast_submit` ツールを実行し、画像を生成してください。
+                *   生成リクエストの `request_id` を取得し、`mcp__t2i-fal-imagen4-fast__imagen4_fast_status` で完了をポーリングしてください。
+                *   完了後、`mcp__t2i-fal-imagen4-fast__imagen4_fast_result` ツールを使って、`${{ needs.setup.outputs.folder-name }}` を `output_directory` として指定し、画像をダウンロードしてください。**このツールの戻り値から、実際に保存された画像の絶対パスを取得してください。**
+                *   ダウンロードされた画像のパスをリストに追加してください。
+            4.  すべてのタスクが完了したら、生成された音楽ファイルと画像ファイルの**実際の絶対パスのリスト**を含むJSONオブジェクトを**標準出力にのみ**出力してください。**余計な会話や説明は一切含めないでください。**
+
             **出力JSON構造:**
             ```json
             {
               "music_file": "music-videos/YYYYMMDD-HHMMSS-STYLE/actual_music_filename.wav",
               "image_files": [
-                "music-videos/YYYYMMDD-HHMMSS-STYLE/actual_image_0.png",
-                "music-videos/YYYYMMDD-HHMMSS-STYLE/actual_image_1.png"
+                "music-videos/YYYYMMSS-STYLE/actual_image_0.png",
+                "music-videos/YYYYMMSS-STYLE/actual_image_1.png"
               ]
             }
             ```
+            **重要:** `music_file` と `image_files` には、**実際にファイルが保存された絶対パス**を正確に含めてください。
       - name: Commit generated assets
         run: |
           git config --global user.name "gemini-agent[bot]"
