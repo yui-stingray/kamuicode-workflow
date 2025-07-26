@@ -174,7 +174,7 @@ jobs:
       - name: Extract plan_path from Gemini output
         id: extract-plan-path
         run: |
-          PLAN_PATH=$(echo "${{ steps.gemini-plan.outputs.gemini_result }}" | grep -o '"plan_path": "[^"]*"' | cut -d '"' -f 4)
+          PLAN_PATH=$(echo "${{ steps.gemini-plan.outputs.gemini_result }}" | jq -r '.plan_path')
           echo "plan_path=$PLAN_PATH" >> $GITHUB_OUTPUT
       - name: Commit production plan
         run: |
@@ -315,7 +315,7 @@ jobs:
                 *   生成リクエストの `request_id` を取得し、`mcp__t2i-fal-imagen4-fast__imagen4_fast_status` で完了をポーリングしてください。
                 *   完了後、`mcp__t2i-fal-imagen4-fast__imagen4_fast_result` ツールを使って、`${{ needs.setup.outputs.folder-name }}` を `output_directory` として指定し、画像をダウンロードしてください。**このツールの戻り値から、実際に保存された画像の絶対パスを取得してください。**
                 *   ダウンロードされた画像のパスをリストに追加してください。
-            4.  すべてのタスクが完了したら、生成された音楽ファイルと画像ファイルの**実際の絶対パスのリスト**を含むJSONオブジェクトを**標準出力にのみ**出力してください。**余計な会話や説明は一切含めないでください。**
+            4.  すべてのタスクが完了したら、生成された音楽ファイルと画像ファイルの**実際の絶対パスのリスト**を含むJSONオブジェクトを**標準出力にのみ**出力してください。
 
             **出力JSON構造:**
             ```json
