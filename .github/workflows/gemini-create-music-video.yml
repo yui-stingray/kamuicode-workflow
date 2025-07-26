@@ -191,6 +191,9 @@ jobs:
   generate-assets:
     runs-on: ubuntu-latest
     needs: [setup, plan]
+    outputs:
+      music-file: ${{ steps.generate-assets-agent.outputs.music_file }}
+      image-files: ${{ steps.generate-assets-agent.outputs.image_files }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -299,6 +302,7 @@ jobs:
           }
           EOF
       - name: 🤖 Run Gemini Asset Generation Agent
+        id: generate-assets-agent
         uses: google-gemini/gemini-cli-action@main
         with:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -307,22 +311,88 @@ jobs:
             提供された制作計画JSONファイル (`${{ needs.plan.outputs.plan_path }}`) に基づいて、音楽と**すべての画像**を生成してください。
             **タスク:**
             1.  `ReadFileTool` を使って `${{ needs.plan.outputs.plan_path }}` の内容を読み込み、JSONをパースしてください。
-            2.  `music_prompt` の値を使って `lyria_generate` ツールを実行し、音楽を `${{ needs.setup.outputs.folder-name }}/music.wav` として保存してください。
+            2.  `music_prompt` の値を使って `lyria_generate` ツールを実行し、音楽を生成してください。
+                *   生成リクエストの `request_id` を取得し、`t2m-google-lyria__lyria_status` で完了をポーリングしてください。
+                *   完了後、`t2m-google-lyria__lyria_result` ツールを使って、`${{ needs.setup.outputs.folder-name }}` を `output_directory` として指定し、音楽ファイルをダウンロードしてください。**このツールの戻り値から、実際に保存された音楽ファイルの絶対パスを取得してください。**
             3.  `scenes` 配列を**ループ処理**してください。各シーンについて:
-                a. `image_prompt` の値を使って `imagen_t2i` ツールを実行してください。
-                b. 生成された画像を `${{ needs.setup.outputs.folder-name }}/image_${INDEX}.png` のように連番で保存してください（INDEXは0から始まる番号）。
-            4.  すべてのタスクが完了したら、成功した旨を報告してください。
+                a. `image_prompt` の値を使って `mcp__t2i-fal-imagen4-fast__imagen4_fast_submit` ツールを実行し、画像を生成してください。
+                *   生成リクエストの `request_id` を取得し、`mcp__t2i-fal-imagen4-fast__imagen4_fast_status` で完了をポーリングしてください。
+                *   完了後、`mcp__t2i-fal-imagen4-fast__imagen4_fast_result` ツールを使って、`${{ needs.setup.outputs.folder-name }}` を `output_directory` として指定し、画像をダウンロードしてください。**このツールの戻り値から、実際に保存された画像の絶対パスを取得してください。**
+                *   ダウンロードされた画像のパスをリストに追加してください。
+            4.  すべてのタスクが完了したら、生成された音楽ファイルと画像ファイルの**実際の絶対パスのリスト**を含むJSONオブジェクトを**標準出力にのみ**出力してください。**余計な会話や説明は一切含めないでください。**
+
+            **出力JSON構造:**
+            ```json
+            {
+              "music_file": "music-videos/YYYYMMDD-HHMMSS-STYLE/actual_music_filename.wav",
+              "image_files": [
+                "music-videos/YYYYMMSS-STYLE/actual_image_0.png",
+                "music-videos/YYYYMMSS-STYLE/actual_image_1.png"
+              ]
+            }
+            ```
+            **重要:** `music_file` と `image_files` には、**実際にファイルが保存された絶対パス**を正確に含めてください。
       - name: Commit generated assets
         run: |
           git config --global user.name "gemini-agent[bot]"
           git config --global user.email "gemini-agent[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "feat(assets): 🎨 Generate music and image assets"
-          git push
+          
+          # Get the raw output from the agent step
+          AGENT_RAW_OUTPUT="${{ steps.generate-assets-agent.outputs.gemini_result }}"
+          echo "Raw agent output: $AGENT_RAW_OUTPUT" # For debugging
+
+          # Extract the JSON block from the agent's output
+          # Assuming the JSON is enclosed in ```json ... ```
+          JSON_OUTPUT=$(echo "$AGENT_RAW_OUTPUT" | sed -n '/```json/,/```/p' | grep -v '```')
+
+          echo "Extracted JSON: $JSON_OUTPUT" # For debugging
+
+          # Attempt to parse the JSON output
+          if echo "$JSON_OUTPUT" | jq -e '.' > /dev/null; then
+              AGENT_OUTPUT=$(echo "$JSON_OUTPUT" | jq -r '.')
+              MUSIC_FILE=$(echo "$AGENT_OUTPUT" | jq -r '.music_file')
+              # Use a loop to handle multiple image files, ensuring each is quoted
+              IMAGE_FILES_ARRAY=()
+              while IFS= read -r line; do
+                  IMAGE_FILES_ARRAY+=("$line")
+              done < <(echo "$AGENT_OUTPUT" | jq -r '.image_files[]')
+
+              echo "Parsed Music File: $MUSIC_FILE"
+              echo "Parsed Image Files: ${IMAGE_FILES_ARRAY[@]}"
+
+              # Add the generated files to Git
+              if [ -n "$MUSIC_FILE" ]; then
+                  git add "$MUSIC_FILE"
+              else
+                  echo "Warning: Music file path is empty. Skipping git add for music file."
+              fi
+
+              for img_file in "${IMAGE_FILES_ARRAY[@]}"; do
+                if [ -n "$img_file" ]; then
+                    git add "$img_file"
+                else
+                    echo "Warning: Empty image file path found. Skipping git add for this image."
+                fi
+              done
+
+              # Check if there are any changes to commit
+              if ! git diff --cached --exit-code; then
+                  git commit -m "feat(assets): 🎨 Generate music and image assets"
+                  git push
+              else
+                  echo "No changes to commit after asset generation."
+              fi
+          else
+              echo "Error: Extracted content is not valid JSON or is empty. Cannot commit generated assets."
+              echo "Extracted content: $JSON_OUTPUT"
+              exit 1 # Fail the job if JSON parsing fails
+          fi
 
   assemble:
     runs-on: ubuntu-latest
     needs: [setup, generate-assets]
+    outputs:
+      final-video-path: ${{ steps.assemble-video.outputs.final_video_path }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -330,121 +400,84 @@ jobs:
           ref: ${{ needs.setup.outputs.branch-name }}
       - name: Setup FFmpeg and SoX
         run: sudo apt-get update && sudo apt-get install -y ffmpeg sox
-      - name: Create .gemini/settings.json
+      - name: Get music duration and image count
+        id: get-assets-info
         run: |
-          mkdir -p .gemini
-          cat > .gemini/settings.json << EOF
-          {
-            "mcpServers": {
-              "t2i-fal-imagen4-ultra": {
-                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_ULTRA_URL }}",
-                "timeout": 300000
-              },
-              "t2i-fal-imagen4-fast": {
-                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_FAST_URL }}",
-                "timeout": 300000
-              },
-              "r2v-fal-vidu-q1": {
-                "httpUrl": "${{ secrets.MCP_R2V_FAL_VIDU_Q1_URL }}",
-                "timeout": 300000
-              },
-              "t2v-fal-veo3-fast": {
-                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEO3_FAST_URL }}",
-                "timeout": 300000
-              },
-              "i2v-fal-hailuo-02-pro": {
-                "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
-                "timeout": 300000
-              },
-              "t2m-google-lyria": {
-                "httpUrl": "${{ secrets.MCP_T2M_GOOGLE_LYRIA_URL }}",
-                "timeout": 300000
-              }
-            },
-            "defaultMode": "acceptEdits",
-            "permissions": {
-              "allow": [
-                "Bash(curl:*)",
-                "Bash(wget:*)",
-                "Bash(sleep:*)",
-                "Bash(stat:*)",
-                "Bash(find:*)",
-                "Bash(ls:*)",
-                "Bash(cat:*)",
-                "Bash(head:*)",
-                "Bash(mkdir:*)",
-                "Bash(git:checkout:*)",
-                "Bash(git:config:*)",
-                "Bash(git:push:*)",
-                "Bash(git:add:*)",
-                "Bash(git:diff:*)",
-                "Bash(git:commit:*)",
-                "Bash(git:pull:*)",
-                "Bash(date:*)",
-                "Bash(jq:*)",
-                "Bash(tr:*)",
-                "Bash(wc:*)",
-                "Bash(echo:*)",
-                "Bash(npx:*)",
-                "Bash(open:*)",
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
-                "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
-                "mcp__r2v-fal-vidu-q1__vidu_q1_status",
-                "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_status",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_result",
-                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
-                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
-                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
-                "mcp__t2m-google-lyria__lyria_generate"
-              ]
-            },
-            "coreTools": [
-              "ReadFileTool",
-              "WriteFileTool",
-              "EditFileTool",
-              "ShellTool",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_status",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_status",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_result",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
-              "mcp__t2m-google-lyria__lyria_generate"
-            ],
-            "auth": {
-              "apiKey": "${{ secrets.GEMINI_API_KEY }}"
-            }
-          }
-          EOF
-      - name: 🤖 Run Gemini Video Editor Agent
-        uses: google-gemini/gemini-cli-action@main
-        with:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          prompt: |
-            あなたはビデオ編集の専門家AIです。
-            `${{ needs.setup.outputs.folder-name }}` ディレクトリにある音楽と画像アセットを結合し、一つの完成したミュージックビデオを作成してください。
-            **タスク:**
-            1. `soxi -D ${{ needs.setup.outputs.folder-name }}/music.wav` を実行し、音楽の長さを秒で取得してください。
-            2. `ls -1 ${{ needs.setup.outputs.folder-name }}/image_*.png | wc -l` を実行し、画像の枚数を数えてください。
-            3. 音楽の長さと画像の枚数から、各画像の表示時間を計算してください。
-            4. 計算結果を元に、`ffmpeg` コマンドを構築してください。画像間にはクロスフェード効果(`xfade`)を適用し、プロ品質の滑らかなトランジションを実現してください。
-            5. 最終的なビデオを `${{ needs.setup.outputs.folder-name }}/final_video.mp4` として保存してください。
+          # Use the actual paths from the generate-assets job's outputs
+          MUSIC_PATH="${{ needs.generate-assets.outputs.music-file }}"
+          IMAGE_FILES_STR="${{ needs.generate-assets.outputs.image-files }}"
+
+          # Convert space-separated string to array for counting
+          # Note: The output from `jq -r '.image_files[]'` will be newline-separated, not space-separated.
+          # Adjusting IFS to handle newline separation.
+          IFS=$'\n' read -d '' -r -a IMAGE_FILES_ARRAY <<< "$IMAGE_FILES_STR"
+          NUM_IMAGES=${#IMAGE_FILES_ARRAY[@]}
+
+          # Ensure MUSIC_PATH is not empty before calling soxi
+          if [ -z "$MUSIC_PATH" ]; then
+              echo "Error: Music file path is empty. Cannot get music duration."
+              exit 1
+          fi
+          MUSIC_DURATION=$(soxi -D "$MUSIC_PATH")
+
+          echo "music_duration=$MUSIC_DURATION" >> $GITHUB_OUTPUT
+          echo "num_images=$NUM_IMAGES" >> $GITHUB_OUTPUT
+          echo "image_files_str=$IMAGE_FILES_STR" >> $GITHUB_OUTPUT # Pass through for next step
+      - name: Assemble final video
+        id: assemble-video
+        run: |
+          MUSIC_DURATION=${{ steps.get-assets-info.outputs.music_duration }}
+          NUM_IMAGES=${{ steps.get-assets-info.outputs.num_images }}
+          IMAGE_FILES_STR="${{ steps.get-assets-info.outputs.image_files_str }}"
+
+          # Convert newline-separated string back to array
+          IFS=$'\n' read -d '' -r -a IMAGE_FILES_ARRAY <<< "$IMAGE_FILES_STR"
+
+          if (( NUM_IMAGES == 0 )); then
+              echo "Error: No images found to assemble the video."
+              exit 1
+          fi
+
+          IMAGE_DURATION=$(echo "scale=4; $MUSIC_DURATION / $NUM_IMAGES" | bc)
+          CROSSFADE_DURATION=1 # 1 second crossfade
+
+          FILTER_COMPLEX_STR=""
+          INPUT_FILES=""
+          CURRENT_OFFSET=0
+
+          for ((i=0; i<NUM_IMAGES; i++)); do
+              INPUT_FILES+="-i \"${IMAGE_FILES_ARRAY[i]}\" "
+              if ((i == 0)); then
+                  FILTER_COMPLEX_STR="[0:v]"
+              else
+                  PREV_INDEX=$((i-1))
+                  FILTER_COMPLEX_STR+="[${PREV_INDEX}v][${i}:v]xfade=transition=fade:duration=${CROSSFADE_DURATION}:offset=${CURRENT_OFFSET}[${i}v];"
+              fi
+              CURRENT_OFFSET=$(echo "scale=4; $CURRENT_OFFSET + $IMAGE_DURATION" | bc)
+          done
+
+          # Remove trailing semicolon and add final format
+          FILTER_COMPLEX_STR=$(echo "$FILTER_COMPLEX_STR" | sed 's/;$//')
+          FINAL_VIDEO_PATH="${{ needs.setup.outputs.folder-name }}/final_video.mp4"
+
+          # The filtergraph needs to map to the last video stream.
+          LAST_VIDEO_STREAM=""
+          if ((NUM_IMAGES == 1)); then
+              LAST_VIDEO_STREAM="[0:v]"
+          else
+              LAST_VIDEO_STREAM="[$((${NUM_IMAGES}-1))v]"
+          fi
+
+          # Add format and map to output
+          FILTER_COMPLEX_STR+=";${LAST_VIDEO_STREAM}format=yuv420p[outv]"
+
+          # Construct the full ffmpeg command
+          FFMPEG_COMMAND="ffmpeg -y ${INPUT_FILES} -i \"${{ needs.setup.outputs.folder-name }}/music.wav\" -filter_complex \"${FILTER_COMPLEX_STR}\" -map \"[outv]\" -map ${NUM_IMAGES}:a -shortest \"$FINAL_VIDEO_PATH\""
+
+          echo "Generated FFMPEG Command: $FFMPEG_COMMAND"
+          eval "$FFMPEG_COMMAND" # Execute the command
+
+          echo "final_video_path=$FINAL_VIDEO_PATH" >> $GITHUB_OUTPUT
       - name: Commit final video
         run: |
           git config --global user.name "gemini-agent[bot]"
@@ -457,6 +490,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: [setup, assemble]
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.setup.outputs.branch-name }}
+          fetch-depth: 0 # 完全な履歴をフェッチして、最新のコミットを確実に取得
+      - name: Debug Git Environment
+        run: |
+          echo "Current working directory: $(pwd)"
+          echo "Directory contents:"
+          ls -la
+          echo "Git status:"
+          git status
+          echo "Git remotes:"
+          git remote -v
+          echo "Git config:"
+          git config --list
       - name: Create Pull Request
         run: |
           PR_BODY=$(cat <<EOF
@@ -468,7 +517,7 @@ jobs:
           - **Tempo:** ${{ github.event.inputs.tempo }}
           ### Lyrics
           > ${{ github.event.inputs.lyrics }}
-          Please review the generated files in the \`${{ needs.setup.outputs.folder-name }}\` directory.
+          Please review the generated files in the `${{ needs.setup.outputs.folder-name }}` directory.
           EOF
           )
           gh pr create \
