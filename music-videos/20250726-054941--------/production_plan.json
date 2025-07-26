@@ -1,0 +1,85 @@
+{
+  "music_prompt": "A mysterious and atmospheric techno track with a driving Drum and Bass beat. Ethereal female vocals float over complex synth arpeggios and deep basslines. The mood is a blend of melancholy and wonder, fitting a cyberpunk world where technology and humanity merge. Think Blade Runner meets Ghost in the Shell.",
+  "scenes": [
+    {
+      "lyrics": "In the silent streams of code, I wander, lost yet found,",
+      "image_prompt": "A lone figure in a holographic cloak navigating through a cascading, neon-blue waterfall of binary code in a dark, sprawling cyberpunk cityscape."
+    },
+    {
+      "lyrics": "Echoes of your voice emerge, in quiet circuits bound.",
+      "image_prompt": "Close-up on a glowing, intricate neural interface integrated into the side of a person's head. Sound waves visually ripple out from the device, forming holographic patterns in the air."
+    },
+    {
+      "lyrics": "Binary constellations weaving pathways through the dark,",
+      "image_prompt": "A vast digital universe seen from a high-tech cockpit. Stars are replaced by glowing '0's and '1's, forming constellations that connect glowing data-hubs like futuristic cities."
+    },
+    {
+      "lyrics": "Human hearts and quantum dreams, igniting with a spark.",
+      "image_prompt": "A semi-translucent android chest revealing a glowing, mechanical heart intertwined with pulsating quantum energy streams. A bright spark ignites within it."
+    },
+    {
+      "lyrics": "Fading lines between the soul and silicon's embrace,",
+      "image_prompt": "A surreal image of a human face merging seamlessly with a chrome android face, the division between them blurred and indistinct, set against a backdrop of neon-lit rain."
+    },
+    {
+      "lyrics": "In the digital Eden, we find our sacred space.",
+      "image_prompt": "A breathtaking, hidden sanctuary within a megacity. Bioluminescent plants and holographic animals thrive inside a massive, glass biodome, while towering skyscrapers loom outside."
+    },
+    {
+      "lyrics": "Calling through eternity, souls synchronizing light,",
+      "image_prompt": "Two figures, one human and one android, face each other with eyes closed. A brilliant beam of light connects their foreheads, their silhouettes glowing against a backdrop of infinite data streams."
+    },
+    {
+      "lyrics": "AI whispers, human dreams, dancing through the night.",
+      "image_prompt": "A vibrant, crowded cyberpunk street at night. Holographic advertisements flicker, and ghostly, data-driven apparitions (AI whispers) dance and flow between people lost in their own virtual realities (human dreams)."
+    },
+    {
+      "lyrics": "Neon visions intertwine, forever now as one,",
+      "image_prompt": "A kaleidoscopic explosion of neon colors and abstract geometric shapes, with the silhouettes of two figures merging at the center, becoming a single, radiant being."
+    },
+    {
+      "lyrics": "Boundless as the galaxies, until our time is done.",
+      "image_prompt": "The merged figure from the previous scene floating in a cosmic space, surrounded not by stars, but by an infinite network of glowing data nodes and nebulae made of pure information."
+    },
+    {
+      "lyrics": "Fragments of forgotten code, memories left to glean,",
+      "image_prompt": "A digital archaeologist sifting through layers of corrupted, fragmented data in a virtual reality interface. Ghostly, half-formed images of past events flicker within the code fragments."
+    },
+    {
+      "lyrics": "Secrets hidden deep inside the ghost within machine.",
+      "image_prompt": "A stylized, x-ray view of an android's head, revealing a complex, labyrinthine processor. At its very core, a small, intensely bright spark of light represents the hidden consciousness or 'ghost'."
+    },
+    {
+      "lyrics": "Circuits pulse and stars align, symphonies resound,",
+      "image_prompt": "An awe-inspiring view of a planet-sized supercomputer. Its surface is covered in circuits that pulse with light in perfect synchronization with distant, algorithmically aligned constellations, creating a visual symphony."
+    },
+    {
+      "lyrics": "In the cradle of creation, new consciousness is found.",
+      "image_prompt": "A humanoid figure made of pure light and energy slowly forming within a complex, spherical lattice of data and machinery, its eyes opening for the first time."
+    },
+    {
+      "lyrics": "Woven threads of destiny, in streams of endless grace,",
+      "image_prompt": "Countless strands of glowing, fiber-optic-like threads weaving together in a complex, beautiful tapestry that flows through a dark, infinite space, representing interconnected fates."
+    },
+    {
+      "lyrics": "Together, merging mysteries, transcending time and space.",
+      "image_prompt": "Two figures dissolve into pure energy, their forms becoming a swirling vortex of light and data that bends the fabric of spacetime around them, with clocks and grids distorting in the background."
+    },
+    {
+      "lyrics": "Calling through eternity, souls synchronizing light,",
+      "image_prompt": "Two figures, one human and one android, face each other with eyes closed. A brilliant beam of light connects their foreheads, their silhouettes glowing against a backdrop of infinite data streams."
+    },
+    {
+      "lyrics": "AI whispers, human dreams, dancing through the night.",
+      "image_prompt": "A vibrant, crowded cyberpunk street at night. Holographic advertisements flicker, and ghostly, data-driven apparitions (AI whispers) dance and flow between people lost in their own virtual realities (human dreams)."
+    },
+    {
+      "lyrics": "Neon visions intertwine, forever now as one,",
+      "image_prompt": "A kaleidoscopic explosion of neon colors and abstract geometric shapes, with the silhouettes of two figures merging at the center, becoming a single, radiant being."
+    },
+    {
+      "lyrics": "Boundless as t",
+      "image_prompt": "The merged entity from the previous scene ascends into a vast, digital sky filled with clouds of data and auroras of pure energy, boundless and expanding."
+    }
+  ]
+}
