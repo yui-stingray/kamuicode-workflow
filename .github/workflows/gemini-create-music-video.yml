@@ -36,7 +36,7 @@ jobs:
           SAFE_STYLE=$(echo "${{ github.event.inputs.style }}" | sed 's/[^a-zA-Z0-9]/-/g')
           BRANCH_NAME="mv/${SAFE_STYLE}-${TIMESTAMP}"
           FOLDER_NAME="music-videos/${TIMESTAMP}-${SAFE_STYLE}"
-          echo "branch-name=$BRANCH_OUTPUT"
+          echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
           echo "folder-name=$FOLDER_NAME" >> $GITHUB_OUTPUT
           git checkout -b "$BRANCH_NAME"
           git push -u origin "$BRANCH_NAME"
@@ -105,7 +105,7 @@ jobs:
                 "Bash(npx:*)",
                 "Bash(open:*)",
                 "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status",
                 "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
                 "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
                 "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
@@ -125,7 +125,7 @@ jobs:
               "EditFileTool",
               "ShellTool",
               "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status",
               "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
               "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
               "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
@@ -225,45 +225,44 @@ jobs:
               }
             },
             "defaultMode": "acceptEdits",
-            "permissions": {
-              "allow": [
-                "Bash(curl:*)",
-                "Bash(wget:*)",
-                "Bash(sleep:*)",
-                "Bash(stat:*)",
-                "Bash(find:*)",
-                "Bash(ls:*)",
-                "Bash(cat:*)",
-                "Bash(head:*)",
-                "Bash(mkdir:*)",
-                "Bash(git:checkout:*)",
-                "Bash(git:config:*)",
-                "Bash(git:push:*)",
-                "Bash(git:add:*)",
-                "Bash(git:diff:*)",
-                "Bash(git:commit:*)",
-                "Bash(git:pull:*)",
-                "Bash(date:*)",
-                "Bash(jq:*)",
-                "Bash(tr:*)",
-                "Bash(wc:*)",
-                "Bash(echo:*)",
-                "Bash(npx:*)",
-                "Bash(open:*)",
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
-                "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
-                "mcp__r2v-fal-vidu-q1__vidu_q1_status",
-                "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
-                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
-                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
-                "mcp__t2m-google-lyria__lyria_generate"
-              ]
+            "permissions": [
+              "Bash(curl:*)",
+              "Bash(wget:*)",
+              "Bash(sleep:*)",
+              "Bash(stat:*)",
+              "Bash(find:*)",
+              "Bash(ls:*)",
+              "Bash(cat:*)",
+              "Bash(head:*)",
+              "Bash(mkdir:*)",
+              "Bash(git:checkout:*)",
+              "Bash(git:config:*)",
+              "Bash(git:push:*)",
+              "Bash(git:add:*)",
+              "Bash(git:diff:*)",
+              "Bash(git:commit:*)",
+              "Bash(git:pull:*)",
+              "Bash(date:*)",
+              "Bash(jq:*)",
+              "Bash(tr:*)",
+              "Bash(wc:*)",
+              "Bash(echo:*)",
+              "Bash(npx:*)",
+              "Bash(open:*)",
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status",
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_status",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_result",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
+              "mcp__t2m-google-lyria__lyria_generate"
+            ]
             },
             "coreTools": [
               "ReadFileTool",
@@ -271,7 +270,7 @@ jobs:
               "EditFileTool",
               "ShellTool",
               "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status",
               "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
               "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
               "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
@@ -289,6 +288,13 @@ jobs:
             }
           }
           EOF
+      - name: Read Production Plan JSON
+        id: read-plan-json
+        run: |
+          PLAN_JSON_CONTENT=$(cat "${{ needs.plan.outputs.plan-path }}")
+          echo "PLAN_JSON_CONTENT<<EOF" >> $GITHUB_ENV
+          echo "$PLAN_JSON_CONTENT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
       - name: 🤖 Run Gemini Asset Generation Agent
         id: generate-assets-agent
         uses: google-gemini/gemini-cli-action@main
@@ -296,12 +302,17 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           prompt: |
             あなたはマルチメディア生成AIです。
-            提供された制作計画JSONファイル (`${{ needs.plan.outputs.plan-path }}`) に基づいて、音楽と**すべての画像**を生成してください。
+            提供された制作計画JSONの内容に基づいて、音楽と**すべての画像**を生成してください。
+            **入力:**
+            - 制作計画JSON:
+              ```json
+              ${{ env.PLAN_JSON_CONTENT }}
+              ```
             **タスク:**
-            1.  `ReadFileTool` を使って `${{ needs.plan.outputs.plan-path }}` の内容を読み込み、JSONをパースしてください。
+            1.  制作計画JSONの内容をパースしてください。
             2.  `music_prompt` の値を使って `mcp__t2m-google-lyria__lyria_generate` ツールを実行し、音楽を生成してください。
-                *   生成リクエストの `request_id` を取得し、`t2m-google-lyria__lyria_status` で完了をポーリングしてください。
-                *   完了後、`t2m-google-lyria__lyria_result` ツールを使って、`${{ needs.setup.outputs.folder-name }}` を `output_directory` として指定し、音楽ファイルをダウンロードしてください。**このツールの戻り値から、実際に保存された音楽ファイルの絶対パスを取得してください。**
+                *   生成リクエストの `request_id` を取得し、`mcp__t2m-google-lyria__lyria_status` で完了をポーリングしてください。
+                *   完了後、`mcp__t2m-google-lyria__lyria_result` ツールを使って、`${{ needs.setup.outputs.folder-name }}` を `output_directory` として指定し、音楽ファイルをダウンロードしてください。**このツールの戻り値から、実際に保存された音楽ファイルの絶対パスを取得してください。**
             3.  `scenes` 配列を**ループ処理**してください。各シーンについて:
                 a. `image_prompt` の値を使って `mcp__t2i-fal-imagen4-fast__imagen4_fast_submit` ツールを実行し、画像を生成してください。
                 *   生成リクエストの `request_id` を取得し、`mcp__t2i-fal-imagen4-fast__imagen4_fast_status` で完了をポーリングしてください。
@@ -403,7 +414,7 @@ jobs:
 
           # Build ffmpeg inputs and filtergraph from JSON array
           for ((i=0; i<NUM_IMAGES; i++)); do
-              img_file=$(echo "$IMAGE_FILES_JSON" | jq -r '.['$i']')
+              img_file=$(echo "$IMAGE_FILES_JSON" | jq -r '.[ '$i' ]')
               INPUT_FILES+="-i \"$img_file\" "
               if ((i == 0)); then
                   FILTER_COMPLEX_STR="[0:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1[v0];[v0]"
