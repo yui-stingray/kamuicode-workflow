@@ -70,7 +70,7 @@ jobs:
                 "timeout": 300000
               },
               "t2v-fal-veo3-fast": {
-                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEO3_FAST_URL }}",
+                "httpUrl": "${{ secrets.MCP_T2V_F2V_FAST_URL }}",
                 "timeout": 300000
               },
               "i2v-fal-hailuo-02-pro": {
@@ -180,6 +180,9 @@ jobs:
             }
             ```
             **重要:** 必ず `production_plan.json` を作成し、その絶対パスを `plan_path` という名前で出力してください。
+            **厳格な出力ルール:**
+            - **絶対に、いかなる自然言語のテキスト（例：「はい、承知いたしました」など）もJSONの前後に含めないでください。**
+            - **出力は、`{` で始まり `}` で終わる、単一の有効なJSONオブジェクトでなければなりません。**
       - name: Commit production plan
         run: |
           git config --global user.name "gemini-agent[bot]"
@@ -218,7 +221,7 @@ jobs:
                 "timeout": 300000
               },
               "t2v-fal-veo3-fast": {
-                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEO3_FAST_URL }}",
+                "httpUrl": "${{ secrets.MCP_T2V_F2V_FAST_URL }}",
                 "timeout": 300000
               },
               "i2v-fal-hailuo-02-pro": {
@@ -327,7 +330,7 @@ jobs:
               "music_file": "music-videos/YYYYMMDD-HHMMSS-STYLE/actual_music_filename.wav",
               "image_files": [
                 "music-videos/YYYYMMDD-HHMMSS-STYLE/actual_image_0.png",
-                "music-videos/YYYYMMSS-STYLE/actual_image_1.png"
+                "music-videos/YYYYMMDD-HHMMSS-STYLE/actual_image_1.png"
               ]
             }
             ```
