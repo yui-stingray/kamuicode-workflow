@@ -48,7 +48,7 @@ jobs:
       plan-path: ${{ steps.extract-plan-path.outputs.plan_path }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions:checkout@v4
         with:
           ref: ${{ needs.setup.outputs.branch-name }}
       - name: Create .gemini/settings.json
