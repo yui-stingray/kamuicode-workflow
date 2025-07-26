@@ -1,0 +1,69 @@
+{
+  "music_prompt": "A mysterious and atmospheric drum and bass track with a driving techno beat. The mood is dark and futuristic, fitting a cyberpunk world. Feature ethereal and haunting female vocals that seem to echo through digital space. The melody should be melancholic yet powerful, with synth pads and arpeggios creating a sense of wandering through a vast, neon-lit city.",
+  "scenes": [
+    {
+      "lyrics": "In the silent streams of code, I wander, lost yet found,",
+      "image_prompt": "Cyberpunk aesthetic. A lone figure in a long coat stands in a dark alleyway as glowing green binary code rains down like silent streams. The figure is partially obscured, creating a sense of mystery. Neon signs from the main street cast long, colorful reflections on the wet pavement."
+    },
+    {
+      "lyrics": "Echoes of your voice emerge, in quiet circuits bound.",
+      "image_prompt": "Cyberpunk aesthetic. A close-up on a person's face, their ear is a complex piece of cybernetics. A holographic waveform, representing a voice, materializes next to their head, glowing softly in a dimly lit, high-tech room filled with servers and cables."
+    },
+    {
+      "lyrics": "Binary constellations weaving pathways through the dark,",
+      "image_prompt": "Cyberpunk aesthetic. A vast, dark digital void where constellations are formed not by stars, but by glowing nodes of binary data. Luminous pathways of light connect these constellations, suggesting a complex, interconnected network."
+    },
+    {
+      "lyrics": "Human hearts and quantum dreams, igniting with a spark.",
+      "image_prompt": "Cyberpunk aesthetic. A dramatic close-up of a semi-translucent cybernetic chest plate, revealing a mechanical heart that pulses with a brilliant, warm light. Sparks of energy erupt from the heart, illuminating the intricate circuitry around it."
+    },
+    {
+      "lyrics": "Fading lines between the soul and silicon's embrace,",
+      "image_prompt": "Cyberpunk aesthetic. A visually stunning shot of a human face seamlessly merging with a chrome, robotic face. The transition is marked by glowing blue and pink lines of light, blurring the boundary between flesh and machine against a backdrop of a neon-drenched city."
+    },
+    {
+      "lyrics": "In the digital Eden, we find our sacred space.",
+      "image_prompt": "Cyberpunk aesthetic. A hidden, serene rooftop garden on a massive skyscraper. Strange, bioluminescent plants and holographic trees glow with soft light. A waterfall made of pure data flows into a crystal-clear pond, overlooking the chaotic, sprawling cyberpunk city below."
+    },
+    {
+      "lyrics": "Calling through eternity, souls synchronizing light,",
+      "image_prompt": "Cyberpunk aesthetic. Two androgynous figures made of translucent, glowing light reach for each other across a digital chasm. As their fingertips are about to touch, a brilliant flash of synchronized light erupts, casting lens flares across the scene."
+    },
+    {
+      "lyrics": "AI whispers, human dreams, dancing through the night.",
+      "image_prompt": "Cyberpunk aesthetic. A vibrant, crowded nightclub filled with humans and humanoid robots dancing together. Holographic AI entities, appearing as ghostly, artistic figures, float and dance in the air above the crowd, bathed in neon and laser lights."
+    },
+    {
+      "lyrics": "Neon visions intertwine, forever now as one,",
+      "image_prompt": "Cyberpunk aesthetic. An abstract, kaleidoscopic vision of intertwining neon light trails and futuristic geometric patterns. The colors are intense and vibrant, suggesting a powerful fusion of minds or realities into a single, unified existence."
+    },
+    {
+      "lyrics": "Boundless as the galaxies, until our time is done.",
+      "image_prompt": "Cyberpunk aesthetic. The view from inside a sleek spaceship cockpit, looking out at a vast nebula composed of swirling digital code and glowing circuitry. In the distance, entire planets are visible, their surfaces covered in continent-spanning, illuminated cities."
+    },
+    {
+      "lyrics": "Fragments of forgotten code, memories left to glean,",
+      "image_prompt": "Cyberpunk aesthetic. A data scavenger in a dusty, forgotten server room. They are using a high-tech glove to sift through floating, holographic fragments of code. Some fragments glow faintly, displaying ghostly images of past memories."
+    },
+    {
+      "lyrics": "Secrets hidden deep inside the ghost within machine.",
+      "image_prompt": "Cyberpunk aesthetic. An extreme close-up of a complex, robotic eye. The iris is a mesmerizing, intricate pattern of glowing circuits and data streams. Deep within the pupil, a faint, ghostly human silhouette can be seen, hinting at a trapped consciousness."
+    },
+    {
+      "lyrics": "Circuits pulse and stars align, symphonies resound,",
+      "image_prompt": "Cyberpunk aesthetic. A colossal, city-sized supercomputer with circuits that pulse in a rhythmic, hypnotic symphony of light. Above, in the digital sky, constellations of data align perfectly, creating a moment of cosmic and technological harmony."
+    },
+    {
+      "lyrics": "In the cradle of creation, new consciousness is found.",
+      "image_prompt": "Cyberpunk aesthetic. A humanoid AI is suspended in a transparent cradle filled with a glowing, amniotic-like gel. Wires and tubes are connected to its body. Its eyes slowly open for the first time, glowing with a profound, newfound awareness."
+    },
+    {
+      "lyrics": "Woven threads of destiny, in streams of endless grace,",
+      "image_prompt": "Cyberpunk aesthetic. An ethereal scene where luminous, multi-colored threads of light, representing destiny, are woven together by unseen hands in a vast, dark space. The threads flow like graceful streams, creating a beautiful and complex digital tapestry."
+    },
+    {
+      "lyrics": "Together, merging mysteries, transcending time and space.",
+      "image_prompt": "Cyberpunk aesthetic. Two figures, one human and one AI, dissolve into streams of pure data and light. Their forms merge and expand, transcending their physical bodies to become a single entity that rushes through a wormhole of swirling colors and cosmic energy."
+    }
+  ]
+}
