@@ -157,7 +157,7 @@ jobs:
             - テンポ: "${{ github.event.inputs.tempo }}"
             **タスク:**
             1. 音楽生成(Lyria)用の詳細なプロンプトを作成してください。
-            2. 歌詞を分析し、各行に対応する画像生成(Imagen)用の創造的なプロンプトを作成してください。
+            2. 歌詞を分析し、各行の情景を表現する、創造的で詳細な**画像ディスクリプション**を作成してください。このディスクリプションは、後で画像生成モデルへの入力として使用されます。
             3. 全ての計画を、以下の構造を持つJSONとして、`${{ needs.setup.outputs.folder-name }}/production_plan.json` ファイルに保存してください。
             **JSON構造:**
             ```json
@@ -299,7 +299,7 @@ jobs:
             提供された制作計画JSONファイル (`${{ needs.plan.outputs.plan-path }}`) に基づいて、音楽と**すべての画像**を生成してください。
             **タスク:**
             1.  `ReadFileTool` を使って `${{ needs.plan.outputs.plan-path }}` の内容を読み込み、JSONをパースしてください。
-            2.  `music_prompt` の値を使って `lyria_generate` ツールを実行し、音楽を生成してください。
+            2.  `music_prompt` の値を使って `mcp__t2m-google-lyria__lyria_generate` ツールを実行し、音楽を生成してください。
                 *   生成リクエストの `request_id` を取得し、`t2m-google-lyria__lyria_status` で完了をポーリングしてください。
                 *   完了後、`t2m-google-lyria__lyria_result` ツールを使って、`${{ needs.setup.outputs.folder-name }}` を `output_directory` として指定し、音楽ファイルをダウンロードしてください。**このツールの戻り値から、実際に保存された音楽ファイルの絶対パスを取得してください。**
             3.  `scenes` 配列を**ループ処理**してください。各シーンについて:
@@ -387,7 +387,7 @@ jobs:
         run: |
           MUSIC_DURATION=${{ steps.get-assets-info.outputs.music_duration }}
           NUM_IMAGES=${{ steps.get-assets-info.outputs.num_images }}
-          IMAGE_FILES_JSON='${{ steps.get-assets-info.outputs.image_files_json }}'
+          IMAGE_FILES_JSON='${{ needs.get-assets-info.outputs.image_files_json }}'
 
           if (( NUM_IMAGES == 0 )); then
               echo "Error: No images found to assemble the video."
