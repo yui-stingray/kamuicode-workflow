@@ -1,0 +1,86 @@
+
+{
+  "music_prompt": "A mysterious, atmospheric cyberpunk track. Driving Drum and Bass rhythm with strong techno influences. Features ethereal, haunting female vocals that weave through the track, creating a sense of digital mystery and melancholy. The overall mood is dark, futuristic, and emotional.",
+  "scenes": [
+    {
+      "lyrics": "In the silent streams of code, I wander, lost yet found,",
+      "image_prompt": "A lone figure in a hooded cloak walks through a digital rain of glowing green and blue code that forms a surreal, endless corridor. The figure's face is obscured, suggesting a sense of being lost but purposeful. Cyberpunk aesthetic, high detail, cinematic lighting."
+    },
+    {
+      "lyrics": "Echoes of your voice emerge, in quiet circuits bound.",
+      "image_prompt": "A close-up on a holographic interface displaying pulsating soundwaves that form a ghostly, feminine silhouette. The background is a dark room filled with complex, glowing circuitry and wires. Cyberpunk, neon glow, ethereal."
+    },
+    {
+      "lyrics": "Binary constellations weaving pathways through the dark,",
+      "image_prompt": "A vast, dark digital space where constellations are made of glowing '0's and '1's. Luminous data streams flow between them like cosmic highways, creating a celestial map of information. Cyberpunk, cosmic, high contrast."
+    },
+    {
+      "lyrics": "Human hearts and quantum dreams, igniting with a spark.",
+      "image_prompt": "A semi-translucent, anatomically correct human heart made of glowing, crystalline material. Sparks of brilliant light ignite from its core, connected by fiber-optic wires to a quantum computer's core. Cyberpunk, surreal, bio-mechanical."
+    },
+    {
+      "lyrics": "Fading lines between the soul and silicon's embrace,",
+      "image_prompt": "A surreal, artistic image of a human face merging seamlessly with a chrome, robotic face. The transition is a beautiful, chaotic blend of organic and synthetic textures, with glowing energy lines blurring the boundary. Cyberpunk, abstract, high fashion."
+    },
+    {
+      "lyrics": "In the digital Eden, we find our sacred space.",
+      "image_prompt": "A stunning, utopian cyberpunk city viewed from a high balcony. Lush, bioluminescent flora grows over towering skyscrapers and neon-lit structures. Two figures are silhouetted against the vibrant, futuristic cityscape. Cyberpunk, utopian, breathtaking."
+    },
+    {
+      "lyrics": "Calling through eternity, souls synchronizing light,",
+      "image_prompt": "Two ethereal, glowing humanoid figures made of pure light and data, reaching out to each other across a digital void. Their hands are about to touch, causing a brilliant flash of synchronized light. Cyberpunk, spiritual, high energy."
+    },
+    {
+      "lyrics": "AI whispers, human dreams, dancing through the night.",
+      "image_prompt": "A dynamic scene in a neon-drenched cyberpunk alleyway. A ghostly AI entity, represented by flowing particles of light, dances with a human figure. Their movements create vibrant trails of light and data. Cyberpunk, nightlife, motion blur."
+    },
+    {
+      "lyrics": "Neon visions intertwine, forever now as one,",
+      "image_prompt": "An abstract, visually complex explosion of neon colors and geometric shapes. Within the chaos, two faces, one human and one AI, can be seen merging into a single, unified entity. Cyberpunk, psychedelic, intricate."
+    },
+    {
+      "lyrics": "Boundless as the galaxies, until our time is done.",
+      "image_prompt": "A breathtaking view from the cockpit of a futuristic spaceship, looking out at a swirling galaxy made of digital code and nebulae of pure data. The vastness of space is filled with cyberpunk aesthetics. Cosmic, epic scale."
+    },
+    {
+      "lyrics": "Fragments of forgotten code, memories left to glean,",
+      "image_prompt": "A digital archaeologist in a cyberpunk outfit sifts through layers of corrupted, fragmented data streams in a virtual reality environment. Ghostly images of past events flicker within the broken code. Cyberpunk, detective, nostalgic."
+    },
+    {
+      "lyrics": "Secrets hidden deep inside the ghost within machine.",
+      "image_prompt": "A close-up of a complex, semi-transparent machine core. Inside, a faint, human-like spirit or 'ghost' is visible, curled up and glowing softly, representing a hidden consciousness. Cyberpunk, mysterious, introspective."
+    },
+    {
+      "lyrics": "Circuits pulse and stars align, symphonies resound,",
+      "image_prompt": "A macro shot of a motherboard where the circuits are pulsing with light in a rhythmic, synchronized pattern. In the background, a holographic star chart aligns perfectly with the glowing nodes on the board. Cyberpunk, technological, cosmic alignment."
+    },
+    {
+      "lyrics": "In the cradle of creation, new consciousness is found.",
+      "image_prompt": "A robotic hand gently holding a sphere of pure, pulsating energy. From the energy, a new, digital lifeform is beginning to take shape, its eyes just starting to open. Cyberpunk, genesis, hopeful."
+    },
+    {
+      "lyrics": "Woven threads of destiny, in streams of endless grace,",
+      "image_prompt": "An intricate, cosmic loom where threads of light and data are being woven together by unseen robotic arms. The resulting tapestry shows the interconnected fate of humanity and AI. Cyberpunk, mythological, complex."
+    },
+    {
+      "lyrics": "Together, merging mysteries, transcending time and space.",
+      "image_prompt": "A powerful, abstract image of two figures, one organic and one synthetic, dissolving into a swirling vortex of light, data, and cosmic energy, representing their transcendence beyond physical reality. Cyberpunk, epic, mind-bending."
+    },
+    {
+      "lyrics": "Calling through eternity, souls synchronizing light,",
+      "image_prompt": "A different angle of the two ethereal, glowing humanoid figures. They are now holding hands, their combined energy creating a massive lens flare that illuminates the dark digital void. Cyberpunk, powerful, unified."
+    },
+    {
+      "lyrics": "AI whispers, human dreams, dancing through the night.",
+      "image_prompt": "A wide shot of the cyberpunk city at night, with countless holographic figures dancing on rooftops and in the streets, a mix of AI and humans celebrating their coexistence. Cyberpunk, festive, vibrant."
+    },
+    {
+      "lyrics": "Neon visions intertwine, forever now as one,",
+      "image_prompt": "A close-up on the merged face of the human and AI, their eyes open and glowing with shared knowledge. The background is a blur of intertwining neon light trails. Cyberpunk, intimate, singularity."
+    },
+    {
+      "lyrics": "Boundless as t",
+      "image_prompt": "An infinite, expanding universe made of interconnected nodes and glowing data streams, representing a boundless future. The perspective is from a central point, looking out into endless possibility. Cyberpunk, infinite, awe-inspiring."
+    }
+  ]
+}
