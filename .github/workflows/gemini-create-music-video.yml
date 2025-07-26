@@ -55,7 +55,103 @@ jobs:
         run: |
           mkdir -p .gemini
           cat > .gemini/settings.json << EOF
-          { "auth": { "apiKey": "${{ secrets.GEMINI_API_KEY }}" } }
+          {
+            "mcpServers": {
+              "t2i-fal-imagen4-ultra": {
+                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_ULTRA_URL }}",
+                "timeout": 300000
+              },
+              "t2i-fal-imagen4-fast": {
+                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_FAST_URL }}",
+                "timeout": 300000
+              },
+              "r2v-fal-vidu-q1": {
+                "httpUrl": "${{ secrets.MCP_R2V_FAL_VIDU_Q1_URL }}",
+                "timeout": 300000
+              },
+              "t2v-fal-veo3-fast": {
+                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEO3_FAST_URL }}",
+                "timeout": 300000
+              },
+              "i2v-fal-hailuo-02-pro": {
+                "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
+                "timeout": 300000
+              },
+              "t2m-google-lyria": {
+                "httpUrl": "${{ secrets.MCP_T2M_GOOGLE_LYRIA_URL }}",
+                "timeout": 300000
+              }
+            },
+            "defaultMode": "acceptEdits",
+            "permissions": {
+              "allow": [
+                "Bash(curl:*)",
+                "Bash(wget:*)",
+                "Bash(sleep:*)",
+                "Bash(stat:*)",
+                "Bash(find:*)",
+                "Bash(ls:*)",
+                "Bash(cat:*)",
+                "Bash(head:*)",
+                "Bash(mkdir:*)",
+                "Bash(git:checkout:*)",
+                "Bash(git:config:*)",
+                "Bash(git:push:*)",
+                "Bash(git:add:*)",
+                "Bash(git:diff:*)",
+                "Bash(git:commit:*)",
+                "Bash(git:pull:*)",
+                "Bash(date:*)",
+                "Bash(jq:*)",
+                "Bash(tr:*)",
+                "Bash(wc:*)",
+                "Bash(echo:*)",
+                "Bash(npx:*)",
+                "Bash(open:*)",
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_status",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_result",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_status",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_result",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
+                "mcp__t2m-google-lyria__lyria_generate"
+              ]
+            },
+            "coreTools": [
+              "ReadFileTool",
+              "WriteFileTool",
+              "EditFileTool",
+              "ShellTool",
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_status",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_result",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_status",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_result",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
+              "mcp__t2m-google-lyria__lyria_generate"
+            ],
+            "auth": {
+              "apiKey": "${{ secrets.GEMINI_API_KEY }}"
+            }
+          }
           EOF
       - name: 🤖 Run Gemini Creative Director Agent
         id: gemini-plan
@@ -104,7 +200,103 @@ jobs:
         run: |
           mkdir -p .gemini
           cat > .gemini/settings.json << EOF
-          { "auth": { "apiKey": "${{ secrets.GEMINI_API_KEY }}" } }
+          {
+            "mcpServers": {
+              "t2i-fal-imagen4-ultra": {
+                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_ULTRA_URL }}",
+                "timeout": 300000
+              },
+              "t2i-fal-imagen4-fast": {
+                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_FAST_URL }}",
+                "timeout": 300000
+              },
+              "r2v-fal-vidu-q1": {
+                "httpUrl": "${{ secrets.MCP_R2V_FAL_VIDU_Q1_URL }}",
+                "timeout": 300000
+              },
+              "t2v-fal-veo3-fast": {
+                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEO3_FAST_URL }}",
+                "timeout": 300000
+              },
+              "i2v-fal-hailuo-02-pro": {
+                "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
+                "timeout": 300000
+              },
+              "t2m-google-lyria": {
+                "httpUrl": "${{ secrets.MCP_T2M_GOOGLE_LYRIA_URL }}",
+                "timeout": 300000
+              }
+            },
+            "defaultMode": "acceptEdits",
+            "permissions": {
+              "allow": [
+                "Bash(curl:*)",
+                "Bash(wget:*)",
+                "Bash(sleep:*)",
+                "Bash(stat:*)",
+                "Bash(find:*)",
+                "Bash(ls:*)",
+                "Bash(cat:*)",
+                "Bash(head:*)",
+                "Bash(mkdir:*)",
+                "Bash(git:checkout:*)",
+                "Bash(git:config:*)",
+                "Bash(git:push:*)",
+                "Bash(git:add:*)",
+                "Bash(git:diff:*)",
+                "Bash(git:commit:*)",
+                "Bash(git:pull:*)",
+                "Bash(date:*)",
+                "Bash(jq:*)",
+                "Bash(tr:*)",
+                "Bash(wc:*)",
+                "Bash(echo:*)",
+                "Bash(npx:*)",
+                "Bash(open:*)",
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_status",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_result",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_status",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_result",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
+                "mcp__t2m-google-lyria__lyria_generate"
+              ]
+            },
+            "coreTools": [
+              "ReadFileTool",
+              "WriteFileTool",
+              "EditFileTool",
+              "ShellTool",
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_status",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_result",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_status",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_result",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
+              "mcp__t2m-google-lyria__lyria_generate"
+            ],
+            "auth": {
+              "apiKey": "${{ secrets.GEMINI_API_KEY }}"
+            }
+          }
           EOF
       - name: 🤖 Run Gemini Asset Generation Agent
         uses: google-gemini/gemini-cli-action@main
@@ -142,7 +334,103 @@ jobs:
         run: |
           mkdir -p .gemini
           cat > .gemini/settings.json << EOF
-          { "auth": { "apiKey": "${{ secrets.GEMINI_API_KEY }}" } }
+          {
+            "mcpServers": {
+              "t2i-fal-imagen4-ultra": {
+                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_ULTRA_URL }}",
+                "timeout": 300000
+              },
+              "t2i-fal-imagen4-fast": {
+                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_FAST_URL }}",
+                "timeout": 300000
+              },
+              "r2v-fal-vidu-q1": {
+                "httpUrl": "${{ secrets.MCP_R2V_FAL_VIDU_Q1_URL }}",
+                "timeout": 300000
+              },
+              "t2v-fal-veo3-fast": {
+                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEO3_FAST_URL }}",
+                "timeout": 300000
+              },
+              "i2v-fal-hailuo-02-pro": {
+                "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
+                "timeout": 300000
+              },
+              "t2m-google-lyria": {
+                "httpUrl": "${{ secrets.MCP_T2M_GOOGLE_LYRIA_URL }}",
+                "timeout": 300000
+              }
+            },
+            "defaultMode": "acceptEdits",
+            "permissions": {
+              "allow": [
+                "Bash(curl:*)",
+                "Bash(wget:*)",
+                "Bash(sleep:*)",
+                "Bash(stat:*)",
+                "Bash(find:*)",
+                "Bash(ls:*)",
+                "Bash(cat:*)",
+                "Bash(head:*)",
+                "Bash(mkdir:*)",
+                "Bash(git:checkout:*)",
+                "Bash(git:config:*)",
+                "Bash(git:push:*)",
+                "Bash(git:add:*)",
+                "Bash(git:diff:*)",
+                "Bash(git:commit:*)",
+                "Bash(git:pull:*)",
+                "Bash(date:*)",
+                "Bash(jq:*)",
+                "Bash(tr:*)",
+                "Bash(wc:*)",
+                "Bash(echo:*)",
+                "Bash(npx:*)",
+                "Bash(open:*)",
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_status",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_result",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_status",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_result",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
+                "mcp__t2m-google-lyria__lyria_generate"
+              ]
+            },
+            "coreTools": [
+              "ReadFileTool",
+              "WriteFileTool",
+              "EditFileTool",
+              "ShellTool",
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_status",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_result",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_status",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_result",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
+              "mcp__t2m-google-lyria__lyria_generate"
+            ],
+            "auth": {
+              "apiKey": "${{ secrets.GEMINI_API_KEY }}"
+            }
+          }
           EOF
       - name: 🤖 Run Gemini Video Editor Agent
         uses: google-gemini/gemini-cli-action@main
