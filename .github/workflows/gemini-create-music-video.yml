@@ -311,8 +311,8 @@ jobs:
             **タスク:**
             1.  制作計画JSONの内容をパースしてください。
             2.  `music_prompt` の値を使って `mcp__t2m-google-lyria__lyria_generate` ツールを実行し、音楽を生成してください。
-                *   生成リクエストの `request_id` を取得し、`mcp__t2m-google-lyria__lyria_status` で完了をポーリングしてください。
-                *   完了後、`mcp__t2m-google-lyria__lyria_result` ツールを使って、`${{ needs.setup.outputs.folder-name }}` を `output_directory` として指定し、音楽ファイルをダウンロードしてください。**このツールの戻り値から、実際に保存された音楽ファイルの絶対パスを取得してください。**
+                *   生成リクエストの `request_id` を取得し、`t2m-google-lyria__lyria_status` で完了をポーリングしてください。
+                *   完了後、`t2m-google-lyria__lyria_result` ツールを使って、`${{ needs.setup.outputs.folder-name }}` を `output_directory` として指定し、音楽ファイルをダウンロードしてください。**このツールの戻り値から、実際に保存された音楽ファイルの絶対パスを取得してください。**
             3.  `scenes` 配列を**ループ処理**してください。各シーンについて:
                 a. `image_prompt` の値を使って `mcp__t2i-fal-imagen4-fast__imagen4_fast_submit` ツールを実行し、画像を生成してください。
                 *   生成リクエストの `request_id` を取得し、`mcp__t2i-fal-imagen4-fast__imagen4_fast_status` で完了をポーリングしてください。
@@ -414,7 +414,7 @@ jobs:
 
           # Build ffmpeg inputs and filtergraph from JSON array
           for ((i=0; i<NUM_IMAGES; i++)); do
-              img_file=$(echo "$IMAGE_FILES_JSON" | jq -r '.[ '$i' ]')
+              img_file=$(echo "$IMAGE_FILES_JSON" | jq -r '.['$i']')
               INPUT_FILES+="-i \"$img_file\" "
               if ((i == 0)); then
                   FILTER_COMPLEX_STR="[0:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1[v0];[v0]"
