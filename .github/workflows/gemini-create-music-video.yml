@@ -174,7 +174,10 @@ jobs:
       - name: Extract plan_path from Gemini output
         id: extract-plan-path
         run: |
-          PLAN_PATH=$(echo "${{ steps.gemini-plan.outputs.gemini_result }}" | jq -r '.plan_path')
+          # The gemini_result output contains the full JSON from the Gemini model.
+          # We need to parse it to extract the plan_path.
+          GEMINI_FULL_OUTPUT="${{ steps.gemini-plan.outputs.gemini_result }}"
+          PLAN_PATH=$(echo "$GEMINI_FULL_OUTPUT" | jq -r '.plan_path')
           echo "plan_path=$PLAN_PATH" >> $GITHUB_OUTPUT
       - name: Commit production plan
         run: |
@@ -412,7 +415,7 @@ jobs:
           # Build ffmpeg inputs and filtergraph from JSON array
           for ((i=0; i<NUM_IMAGES; i++)); do
               img_file=$(echo "$IMAGE_FILES_JSON" | jq -r '.['$i']')
-              INPUT_FILES+="-i \"$img_file\" "
+              INPUT_FILES+="-i "$img_file" "
               if ((i == 0)); then
                   FILTER_COMPLEX_STR="[0:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1[v0];[v0]"
               else
@@ -426,7 +429,7 @@ jobs:
           FINAL_VIDEO_PATH="${{ needs.setup.outputs.folder-name }}/final_video.mp4"
 
           # Construct the full ffmpeg command
-          FFMPEG_COMMAND="ffmpeg -y ${INPUT_FILES} -i \"${{ needs.generate-assets.outputs.music-file }}\" -filter_complex \"${FILTER_COMPLEX_STR}format=yuv420p[outv]\" -map \"[outv]\" -map ${NUM_IMAGES}:a -shortest \"$FINAL_VIDEO_PATH\""
+          FFMPEG_COMMAND="ffmpeg -y ${INPUT_FILES} -i "${{ needs.generate-assets.outputs.music-file }}" -filter_complex "${FILTER_COMPLEX_STR}format=yuv420p[outv]" -map "[outv]" -map ${NUM_IMAGES}:a -shortest "$FINAL_VIDEO_PATH""
 
           echo "Generated FFMPEG Command: $FFMPEG_COMMAND"
           eval "$FFMPEG_COMMAND"
