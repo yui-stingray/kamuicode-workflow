@@ -155,7 +155,7 @@ jobs:
             - テンポ: "${{ github.event.inputs.tempo }}"
             **タスク:**
             1. 音楽生成(Lyria)用の詳細なプロンプトを作成してください。
-            2. 歌詞を分析し、各行の情景を表現する、創造的で詳細な**画像ディスクリプション**を作成してください。このディスクリプションは、後で画像生成モデルへの入力として使用されます。
+            2. 歌詞を分析し、各行の情景を表現する、創造的で詳細な**画像ディスクリプション**を作成してください。
             3. 全ての計画を、以下の構造を持つJSONとして、`${{ needs.setup.outputs.folder-name }}/production_plan.json` ファイルに保存してください。
             **JSON構造:**
             ```json
@@ -260,8 +260,7 @@ jobs:
               "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
               "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
               "mcp__t2m-google-lyria__lyria_generate"
-            ]
-            },
+            ],
             "coreTools": [
               "ReadFileTool",
               "WriteFileTool",
