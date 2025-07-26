@@ -116,8 +116,7 @@ jobs:
               "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
               "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
               "mcp__t2m-google-lyria__lyria_generate"
-            ]
-            },
+            ],
             "coreTools": [
               "ReadFileTool",
               "WriteFileTool",
