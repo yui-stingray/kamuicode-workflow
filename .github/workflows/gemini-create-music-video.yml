@@ -36,7 +36,7 @@ jobs:
           SAFE_STYLE=$(echo "${{ github.event.inputs.style }}" | sed 's/[^a-zA-Z0-9]/-/g')
           BRANCH_NAME="mv/${SAFE_STYLE}-${TIMESTAMP}"
           FOLDER_NAME="music-videos/${TIMESTAMP}-${SAFE_STYLE}"
-          echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "branch-name=$BRANCH_OUTPUT"
           echo "folder-name=$FOLDER_NAME" >> $GITHUB_OUTPUT
           git checkout -b "$BRANCH_NAME"
           git push -u origin "$BRANCH_NAME"
