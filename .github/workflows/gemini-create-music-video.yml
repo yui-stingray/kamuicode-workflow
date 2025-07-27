@@ -4,15 +4,18 @@ on:
   workflow_dispatch:
     inputs:
       lyrics:
-        description: '歌詞 (各行は改行で区切ってください)'
+        description: '
+歌詞 (各行は改行で区切ってください)'
         required: true
         type: string
       style:
-        description: '音楽と画像の全体的なスタイル (例: 水彩画風, アニメ, サイバーパンク)'
+        description: '
+音楽と画像の全体的なスタイル (例: 水彩画風, アニメ, サイバーパンク)'
         required: true
         type: string
       tempo:
-        description: '音楽のテンポ (例: スロー, 80 BPM, アップビート)'
+        description: '
+音楽のテンポ (例: スロー, 80 BPM, アップビート)'
         required: true
         type: string
 
@@ -131,8 +134,8 @@ jobs:
           git config --global user.email "gemini-agent[bot]@users.noreply.github.com"
           git add .
           if ! git diff --cached --exit-code; then
-            git commit -m "feat(plan): 📋 Create music video production plan"
-            git push
+            git commit -m "feat(plan): 📋 Create music video production plan" || true
+            git push || true
           else
             echo "No changes to commit in production plan."
           fi
@@ -248,8 +251,8 @@ jobs:
 
           git add .
           if ! git diff --cached --exit-code; then
-            git commit -m "feat(assets): 🎨 Generate music and image assets"
-            git push
+            git commit -m "feat(assets): 🎨 Generate music and image assets" || true
+            git push || true
           else
             echo "No changes to commit in generated assets."
           fi
@@ -318,8 +321,8 @@ jobs:
           git config --global user.email "gemini-agent[bot]@users.noreply.github.com"
           git add .
           if ! git diff --cached --exit-code; then
-            git commit -m "feat(video): 🎬 Assemble final music video"
-            git push
+            git commit -m "feat(video): 🎬 Assemble final music video" || true
+            git push || true
           else
             echo "No changes to commit in final video."
           fi
