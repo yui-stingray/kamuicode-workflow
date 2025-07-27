@@ -4,18 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       lyrics:
-        description: '
-歌詞 (各行は改行で区切ってください)'
+        description: '歌詞 (各行は改行で区切ってください)'
         required: true
         type: string
       style:
-        description: '
-音楽と画像の全体的なスタイル (例: 水彩画風, アニメ, サイバーパンク)'
+        description: '音楽と画像の全体的なスタイル (例: 水彩画風, アニメ, サイバーパンク)'
         required: true
         type: string
       tempo:
-        description: '
-音楽のテンポ (例: スロー, 80 BPM, アップビート)'
+        description: '音楽のテンポ (例: スロー, 80 BPM, アップビート)'
         required: true
         type: string
 
@@ -225,6 +222,26 @@ jobs:
         run: |
           git config --global user.name "gemini-agent[bot]"
           git config --global user.email "gemini-agent[bot]@users.noreply.github.com"
+
+          FOLDER_NAME="${{ needs.setup.outputs.folder-name }}"
+          MUSIC_FILE="${FOLDER_NAME}/music.wav"
+          FIRST_IMAGE="${FOLDER_NAME}/image_0.png"
+          TIMEOUT=60 # seconds
+          ELAPSED_TIME=0
+
+          echo "Waiting for generated files to appear..."
+          while [ ! -f "$MUSIC_FILE" ] || [ ! -f "$FIRST_IMAGE" ]; do
+            if [ "$ELAPSED_TIME" -ge "$TIMEOUT" ]; then
+              echo "Error: Timeout waiting for generated files."
+              ls -lR "$FOLDER_NAME" || true # List contents for debugging
+              exit 1
+            fi
+            echo "Files not found yet. Waiting 5 seconds..."
+            sleep 5
+            ELAPSED_TIME=$((ELAPSED_TIME + 5))
+          done
+          echo "Generated files found. Proceeding with commit."
+
           git add .
           git commit -m "feat(assets): 🎨 Generate music and image assets"
           git push
