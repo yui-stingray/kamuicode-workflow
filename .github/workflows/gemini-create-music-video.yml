@@ -81,8 +81,16 @@ jobs:
             "defaultMode": "acceptEdits",
             "permissions": {
               "allow": [
-                "Bash(curl:*)"
+                "Bash(mkdir:*)",
+                "WriteFileTool"
               ]
+            },
+            "coreTools": [
+              "WriteFileTool",
+              "Bash"
+            ],
+            "auth": {
+              "apiKey": "${{ secrets.GEMINI_API_KEY }}"
             }
           }
           EOF
@@ -162,8 +170,22 @@ jobs:
             "defaultMode": "acceptEdits",
             "permissions": {
               "allow": [
-                "Bash(curl:*)"
+                "ReadFileTool",
+                "mcp__t2m-google-lyria__lyria_generate",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_result"
               ]
+            },
+            "coreTools": [
+              "ReadFileTool",
+              "mcp__t2m-google-lyria__lyria_generate",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result"
+            ],
+            "auth": {
+              "apiKey": "${{ secrets.GEMINI_API_KEY }}"
             }
           }
           EOF
@@ -190,8 +212,7 @@ jobs:
             **タスク:**
             1.  制作計画JSONの内容をパースしてください。
             2.  `music_prompt` の値を使って `mcp__t2m-google-lyria__lyria_generate` ツールを実行し、音楽を生成してください。
-                *   生成リクエストの `request_id` を取得し、`t2m-google-lyria__lyria_status` で完了をポーリングしてください。
-                *   完了後、`t2m-google-lyria__lyria_result` ツールを使って、`${{ needs.setup.outputs.folder-name }}` を `output_directory` として指定し、音楽ファイルをダウンロードしてください。**このツールの戻り値から、実際に保存された音楽ファイルの絶対パスを取得してください。**
+                *   完了後、`${{ needs.setup.outputs.folder-name }}` を `output_directory` として指定し、音楽ファイルをダウンロードしてください。**このツールの戻り値から、実際に保存された音楽ファイルの絶対パスを取得してください。**
             3.  `scenes` 配列を**ループ処理**してください。各シーンについて:
                 a. `image_prompt` の値を使って `mcp__t2i-fal-imagen4-fast__imagen4_fast_submit` ツールを実行し、画像を生成してください。
                 *   生成リクエストの `request_id` を取得し、`mcp__t2i-fal-imagen4-fast__imagen4_fast_status` で完了をポーリングしてください。
