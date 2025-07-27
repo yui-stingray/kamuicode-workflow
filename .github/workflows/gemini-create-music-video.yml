@@ -215,63 +215,19 @@ jobs:
               ${{ env.PLAN_JSON_CONTENT }}
               ```
             **タスク:**
-            1.  制作計画JSONの内容をパースしてください。
-            2.  `music_prompt` の値を使って `mcp__t2m-google-lyria__lyria_generate` ツールを実行し、音楽を生成してください。
-                *   完了後、`${{ needs.setup.outputs.folder-name }}` を `output_directory` として指定し、音楽ファイルをダウンロードしてください。**このツールの戻り値から、実際に保存された音楽ファイルの絶対パスを取得してください。**
+            1.  `ReadFileTool` を使って `${{ needs.plan.outputs.plan_path }}` の内容を読み込み、JSONをパースしてください。
+            2.  `music_prompt` の値を使って `lyria_generate` ツールを実行し、音楽を `${{ needs.setup.outputs.folder-name }}/music.wav` として保存してください。
             3.  `scenes` 配列を**ループ処理**してください。各シーンについて:
-                a. `image_prompt` の値を使って `mcp__t2i-fal-imagen4-fast__imagen4_fast_submit` ツールを実行し、画像を生成してください。
-                *   生成リクエストの `request_id` を取得し、`mcp__t2i-fal-imagen4-fast__imagen4_fast_status` で完了をポーリングしてください。
-                *   完了後、`mcp__t2i-fal-imagen4-fast__imagen4_fast_result` ツールを使って、`${{ needs.setup.outputs.folder-name }}` を `output_directory` として指定し、画像をダウンロードしてください。**このツールの戻り値から、実際に保存された画像の絶対パスを取得してください。**
-                *   ダウンロードされた画像のパスをリストに追加してください。
-            4.  すべてのタスクが完了したら、生成された音楽ファイルと画像ファイルの**実際の絶対パスのリスト**を含むJSONオブジェクトを**標準出力にのみ**出力してください。
-
-            **出力JSON構造:**
-            ```json
-            {
-              "music_file": "music-videos/YYYYMMDD-HHMMSS-STYLE/actual_music_filename.wav",
-              "image_files": [
-                "music-videos/YYYYMMDD-HHMMSS-STYLE/actual_image_0.png",
-                "music-videos/YYYYMMDD-HHMMSS-STYLE/actual_image_1.png"
-              ]
-            }
-            ```
-            **重要:** `music_file` と `image_files` には、**実際にファイルが保存された絶対パス**を正確に含めてください。
-      - name: Parse, Commit, and Output Asset Paths
-        id: parse-assets
+                a. `image_prompt` の値を使って `imagen_t2i` ツールを実行してください。
+                b. 生成された画像を `${{ needs.setup.outputs.folder-name }}/image_${INDEX}.png` のように連番で保存してください（INDEXは0から始まる番号）。
+            4.  すべてのタスクが完了したら、成功した旨を報告してください。
+      - name: Commit generated assets
         run: |
           git config --global user.name "gemini-agent[bot]"
           git config --global user.email "gemini-agent[bot]@users.noreply.github.com"
-          
-          AGENT_RAW_OUTPUT="${{ steps.generate-assets-agent.outputs.gemini_result }}"
-          echo "Raw agent output: $AGENT_RAW_OUTPUT"
-
-          JSON_OUTPUT=$(echo "$AGENT_RAW_OUTPUT" | sed -n '/```json/,/```/p' | grep -v '```')
-          echo "Extracted JSON: $JSON_OUTPUT"
-
-          if echo "$JSON_OUTPUT" | jq -e '.' > /dev/null; then
-              MUSIC_FILE=$(echo "$JSON_OUTPUT" | jq -r '.music_file')
-              IMAGE_FILES_JSON=$(echo "$JSON_OUTPUT" | jq -c '.image_files') # Keep as JSON array string
-
-              echo "music_file=$MUSIC_FILE" >> $GITHUB_OUTPUT
-              echo "image_files=$IMAGE_FILES_JSON" >> $GITHUB_OUTPUT
-
-              git add "$MUSIC_FILE"
-              # Use jq to iterate and add each image file
-              echo "$IMAGE_FILES_JSON" | jq -r '.[]' | while read -r img_file; do
-                git add "$img_file"
-              done
-
-              if ! git diff --cached --exit-code; then
-                  git commit -m "feat(assets): 🎨 Generate music and image assets"
-                  git push
-              else
-                  echo "No changes to commit after asset generation."
-              fi
-          else
-              echo "Error: Extracted content is not valid JSON or is empty."
-              echo "Extracted content: $JSON_OUTPUT"
-              exit 1
-          fi
+          git add .
+          git commit -m "feat(assets): 🎨 Generate music and image assets"
+          git push
 
   assemble:
     runs-on: ubuntu-latest
@@ -288,22 +244,18 @@ jobs:
       - name: Get music duration and image count
         id: get-assets-info
         run: |
-          MUSIC_PATH="${{ needs.generate-assets.outputs.music-file }}"
-          IMAGE_FILES_JSON='${{ needs.generate-assets.outputs.image-files }}'
-
-          NUM_IMAGES=$(echo "$IMAGE_FILES_JSON" | jq '. | length')
-          MUSIC_DURATION=$(soxi -D "$MUSIC_PATH")
+          MUSIC_PATH="${{ needs.setup.outputs.folder-name }}/music.wav"
+          NUM_IMAGES=$(ls -1 ${{ needs.setup.outputs.folder-name }}/image_*.png | wc -l)
+          MUSIC_DURATION=$(soxi -D $MUSIC_PATH)
 
           echo "music_duration=$MUSIC_DURATION" >> $GITHUB_OUTPUT
           echo "num_images=$NUM_IMAGES" >> $GITHUB_OUTPUT
-          echo "image_files_json=$IMAGE_FILES_JSON" >> $GITHUB_OUTPUT
 
       - name: Assemble final video
         id: assemble-video
         run: |
           MUSIC_DURATION=${{ steps.get-assets-info.outputs.music_duration }}
           NUM_IMAGES=${{ steps.get-assets-info.outputs.num_images }}
-          IMAGE_FILES_JSON='${{ needs.get-assets-info.outputs.image_files_json }}'
 
           if (( NUM_IMAGES == 0 )); then
               echo "Error: No images found to assemble the video."
@@ -315,12 +267,8 @@ jobs:
 
           FILTER_COMPLEX_STR=""
           INPUT_FILES=""
-          CURRENT_OFFSET=0
-
-          # Build ffmpeg inputs and filtergraph from JSON array
           for ((i=0; i<NUM_IMAGES; i++)); do
-              img_file=$(echo "$IMAGE_FILES_JSON" | jq -r '.['$i']')
-              INPUT_FILES+="-i \"$img_file\" "
+              INPUT_FILES+="-loop 1 -t $IMAGE_DURATION -i ${{ needs.setup.outputs.folder-name }}/image_$i.png "
               if ((i == 0)); then
                   FILTER_COMPLEX_STR="[0:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1[v0];[v0]"
               else
@@ -330,11 +278,9 @@ jobs:
               CURRENT_OFFSET=$(echo "scale=4; $CURRENT_OFFSET + $IMAGE_DURATION - $CROSSFADE_DURATION" | bc)
           done
 
-          # Final video path
           FINAL_VIDEO_PATH="${{ needs.setup.outputs.folder-name }}/final_video.mp4"
 
-          # Construct the full ffmpeg command
-          FFMPEG_COMMAND="ffmpeg -y ${INPUT_FILES} -i \"${{ needs.generate-assets.outputs.music-file }}\" -filter_complex \"${FILTER_COMPLEX_STR}format=yuv420p[outv]\" -map \"[outv]\" -map ${NUM_IMAGES}:a -shortest \"$FINAL_VIDEO_PATH\""
+          FFMPEG_COMMAND="ffmpeg -y ${INPUT_FILES} -i ${{ needs.setup.outputs.folder-name }}/music.wav -filter_complex \"${FILTER_COMPLEX_STR}format=yuv420p[outv]\" -map \"[outv]\" -map $NUM_IMAGES:a -shortest $FINAL_VIDEO_PATH"
 
           echo "Generated FFMPEG Command: $FFMPEG_COMMAND"
           eval "$FFMPEG_COMMAND"
