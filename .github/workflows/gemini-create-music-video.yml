@@ -170,7 +170,7 @@ jobs:
             **厳格な出力ルール:**
             - **絶対に、いかなる自然言語のテキスト（例：「はい、承知いたしました」など）もJSONの前後に含めないでください。**
             - **出力は、`{` で始まり `}` で終わる、単一の有効なJSONオブジェクトでなければなりません。**
-EOF
+          EOF
 
           GEMINI_RESPONSE=$(gemini --yolo --prompt "$PROMPT")
           echo "gemini_result=$GEMINI_RESPONSE" >> $GITHUB_OUTPUT
