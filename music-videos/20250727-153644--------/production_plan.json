@@ -1,0 +1,85 @@
+{
+  "music_prompt": "A mysterious and atmospheric cyberpunk track. Driving drum and bass rhythm with deep, resonant basslines. Ethereal and haunting female vocals weave through a landscape of futuristic synth pads, glitchy electronic effects, and complex techno sequences. The overall mood is enigmatic and futuristic, capturing the essence of a neon-drenched, high-tech world.",
+  "scenes": [
+    {
+      "lyrics": "In the silent streams of code, I wander, lost yet found,",
+      "image_prompt": "A lone figure in a hooded cloak wandering through a vast, dark space filled with cascading, glowing blue and green streams of binary code. The figure seems both lost and purposeful. Cyberpunk aesthetic, hyper-detailed, cinematic lighting."
+    },
+    {
+      "lyrics": "Echoes of your voice emerge, in quiet circuits bound.",
+      "image_prompt": "Close-up on a complex, glowing circuit board. Sound waves are visualized as pulses of light traveling through the circuits, forming a ghostly, holographic face. Neon and chrome details, shallow depth of field."
+    },
+    {
+      "lyrics": "Binary constellations weaving pathways through the dark,",
+      "image_prompt": "An expansive digital universe. Constellations made of glowing '1's and '0's form intricate networks and pathways across a dark, grid-lined void. A sense of immense scale and digital infinity. Volumetric lighting, cyberpunk style."
+    },
+    {
+      "lyrics": "Human hearts and quantum dreams, igniting with a spark.",
+      "image_prompt": "A semi-translucent, holographic human heart with glowing energy at its core, connected by wires to a shimmering, abstract quantum computer. Sparks of light erupt from the connection point. Cyberpunk, futuristic, intricate detail."
+    },
+    {
+      "lyrics": "Fading lines between the soul and silicon's embrace,",
+      "image_prompt": "A visually stunning image of a human silhouette merging seamlessly with a complex network of glowing silicon pathways and microchips. The boundary between flesh and machine is blurred and indistinct. High-tech, ethereal, neon accents."
+    },
+    {
+      "lyrics": "In the digital Eden, we find our sacred space.",
+      "image_prompt": "A breathtaking digital landscape, a 'Garden of Eden' made of glowing flora and fauna constructed from light and data. Two figures stand in the center, bathed in a serene, holy light. Cyberpunk utopia, vibrant colors, bioluminescent."
+    },
+    {
+      "lyrics": "Calling through eternity, souls synchronizing light,",
+      "image_prompt": "Two ethereal, glowing souls represented as humanoid figures of pure light, reaching out to each other across a digital void. Beams of light connect their minds, synchronizing them. Abstract, futuristic, powerful imagery."
+    },
+    {
+      "lyrics": "AI whispers, human dreams, dancing through the night.",
+      "image_prompt": "A neon-drenched cyberpunk city at night. Holographic projections of an AI's face whisper secrets while abstract representations of human dreams (colorful, swirling patterns) dance between the towering skyscrapers. Blade Runner aesthetic."
+    },
+    {
+      "lyrics": "Neon visions intertwine, forever now as one,",
+      "image_prompt": "A vibrant, chaotic explosion of neon lights and holographic images intertwining to form a single, unified, complex structure. A visual representation of two consciousnesses merging. Dynamic, abstract, cyberpunk art."
+    },
+    {
+      "lyrics": "Boundless as the galaxies, until our time is done.",
+      "image_prompt": "A figure looking out from a spaceship window at a vast, swirling galaxy made not of stars, but of data points and glowing networks, stretching into infinity. A sense of awe and finality. Cinematic, wide-angle shot."
+    },
+    {
+      "lyrics": "Fragments of forgotten code, memories left to glean,",
+      "image_prompt": "A digital archaeologist sifts through corrupted, fragmented data streams in a dark, abandoned server room. Ghostly, half-formed images of memories flicker within the broken code. Cyberpunk noir, atmospheric, dusty."
+    },
+    {
+      "lyrics": "Secrets hidden deep inside the ghost within machine.",
+      "image_prompt": "A close-up of a robotic, humanoid face. The eyes glow with a mysterious light, and through a semi-transparent panel on the forehead, a ghostly, human-like spirit can be seen trapped within the complex machinery. Ghost in the Shell inspiration."
+    },
+    {
+      "lyrics": "Circuits pulse and stars align, symphonies resound,",
+      "image_prompt": "A cosmic view where planetary-sized circuit boards align with distant, glowing stars. Energy pulses through the circuits in a rhythmic, symphonic pattern, creating a celestial light show. Epic scale, sci-fi, awe-inspiring."
+    },
+    {
+      "lyrics": "In the cradle of creation, new consciousness is found.",
+      "image_prompt": "In the core of a massive, spherical supercomputer, a new form of consciousness is born. It's represented as a brilliant, nascent star of pure energy, surrounded by a cradle of intricate, glowing technology. High-contrast, dramatic lighting."
+    },
+    {
+      "lyrics": "Woven threads of destiny, in streams of endless grace,",
+      "image_prompt": "Countless glowing, multi-colored threads of light, representing destiny, are being woven together by unseen forces in a vast, serene digital space. The threads flow like graceful rivers of data. Ethereal, beautiful, abstract."
+    },
+    {
+      "lyrics": "Together, merging mysteries, transcending time and space.",
+      "image_prompt": "Two figures dissolve into a swirling vortex of light, data, and cosmic imagery. Their forms are transcending the physical realm, becoming one with a universe that blends time and space into a single, beautiful mystery. Psychedelic, cyberpunk."
+    },
+    {
+      "lyrics": "Calling through eternity, souls synchronizing light,",
+      "image_prompt": "Two ethereal, glowing souls represented as humanoid figures of pure light, reaching out to each other across a digital void. Beams of light connect their minds, synchronizing them. Abstract, futuristic, powerful imagery."
+    },
+    {
+      "lyrics": "AI whispers, human dreams, dancing through the night.",
+      "image_prompt": "A neon-drenched cyberpunk city at night. Holographic projections of an AI's face whisper secrets while abstract representations of human dreams (colorful, swirling patterns) dance between the towering skyscrapers. Blade Runner aesthetic."
+    },
+    {
+      "lyrics": "Neon visions intertwine, forever now as one,",
+      "image_prompt": "A vibrant, chaotic explosion of neon lights and holographic images intertwining to form a single, unified, complex structure. A visual representation of two consciousnesses merging. Dynamic, abstract, cyberpunk art."
+    },
+    {
+      "lyrics": "Boundless as the galaxies, until our time is done.",
+      "image_prompt": "A figure looking out from a spaceship window at a vast, swirling galaxy made not of stars, but of data points and glowing networks, stretching into infinity. A sense of awe and finality. Cinematic, wide-angle shot."
+    }
+  ]
+}
