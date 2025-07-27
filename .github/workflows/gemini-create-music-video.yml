@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup
     outputs:
-      plan-path: ${{ steps.parse-plan-output.outputs.plan_path }}
+      plan-path: ${{ steps.gemini-plan.outputs.plan_path }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -69,6 +69,10 @@ jobs:
                 "httpUrl": "${{ secrets.MCP_R2V_FAL_VIDU_Q1_URL }}",
                 "timeout": 300000
               },
+              "t2v-fal-veo3-fast": {
+                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEO3_FAST_URL }}",
+                "timeout": 300000
+              },
               "i2v-fal-hailuo-02-pro": {
                 "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
                 "timeout": 300000
@@ -81,13 +85,68 @@ jobs:
             "defaultMode": "acceptEdits",
             "permissions": {
               "allow": [
+                "Bash(curl:*)",
+                "Bash(wget:*)",
+                "Bash(sleep:*)",
+                "Bash(stat:*)",
+                "Bash(find:*)",
+                "Bash(ls:*)",
+                "Bash(cat:*)",
+                "Bash(head:*)",
                 "Bash(mkdir:*)",
-                "WriteFileTool"
+                "Bash(git:checkout:*)",
+                "Bash(git:config:*)",
+                "Bash(git:push:*)",
+                "Bash(git:add:*)",
+                "Bash(git:diff:*)",
+                "Bash(git:commit:*)",
+                "Bash(git:pull:*)",
+                "Bash(date:*)",
+                "Bash(jq:*)",
+                "Bash(tr:*)",
+                "Bash(wc:*)",
+                "Bash(echo:*)",
+                "Bash(npx:*)",
+                "Bash(open:*)",
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_status",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_result",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_status",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_result",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
+                "mcp__t2m-google-lyria__lyria_generate"
               ]
             },
             "coreTools": [
+              "ReadFileTool",
               "WriteFileTool",
-              "Bash"
+              "EditFileTool",
+              "ShellTool",
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_status",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_result",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_status",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_result",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
+              "mcp__t2m-google-lyria__lyria_generate"
             ],
             "auth": {
               "apiKey": "${{ secrets.GEMINI_API_KEY }}"
@@ -121,11 +180,6 @@ jobs:
             }
             ```
             **重要:** 必ず `production_plan.json` を作成し、その絶対パスを `plan_path` という名前で出力してください。
-      - name: Parse plan output
-        id: parse-plan-output
-        run: |
-          PLAN_PATH=$(echo "${{ steps.gemini-plan.outputs.gemini_result }}" | grep -o 'plan_path: .*' | cut -d ' ' -f 2)
-          echo "plan_path=$PLAN_PATH" >> $GITHUB_OUTPUT
       - name: Commit production plan
         run: |
           git config --global user.name "gemini-agent[bot]"
@@ -137,9 +191,6 @@ jobs:
   generate-assets:
     runs-on: ubuntu-latest
     needs: [setup, plan]
-    outputs:
-      music-file: ${{ steps.parse-assets.outputs.music_file }}
-      image-files: ${{ steps.parse-assets.outputs.image_files }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -163,6 +214,10 @@ jobs:
                 "httpUrl": "${{ secrets.MCP_R2V_FAL_VIDU_Q1_URL }}",
                 "timeout": 300000
               },
+              "t2v-fal-veo3-fast": {
+                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEO3_FAST_URL }}",
+                "timeout": 300000
+              },
               "i2v-fal-hailuo-02-pro": {
                 "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
                 "timeout": 300000
@@ -175,45 +230,81 @@ jobs:
             "defaultMode": "acceptEdits",
             "permissions": {
               "allow": [
-                "ReadFileTool",
-                "mcp__t2m-google-lyria__lyria_generate",
+                "Bash(curl:*)",
+                "Bash(wget:*)",
+                "Bash(sleep:*)",
+                "Bash(stat:*)",
+                "Bash(find:*)",
+                "Bash(ls:*)",
+                "Bash(cat:*)",
+                "Bash(head:*)",
+                "Bash(mkdir:*)",
+                "Bash(git:checkout:*)",
+                "Bash(git:config:*)",
+                "Bash(git:push:*)",
+                "Bash(git:add:*)",
+                "Bash(git:diff:*)",
+                "Bash(git:commit:*)",
+                "Bash(git:pull:*)",
+                "Bash(date:*)",
+                "Bash(jq:*)",
+                "Bash(tr:*)",
+                "Bash(wc:*)",
+                "Bash(echo:*)",
+                "Bash(npx:*)",
+                "Bash(open:*)",
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
                 "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
                 "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_result"
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_status",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_result",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_status",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_result",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
+                "mcp__t2m-google-lyria__lyria_generate"
               ]
             },
             "coreTools": [
               "ReadFileTool",
-              "mcp__t2m-google-lyria__lyria_generate",
+              "WriteFileTool",
+              "EditFileTool",
+              "ShellTool",
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
               "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
               "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result"
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_status",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_result",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_status",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_result",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
+              "mcp__t2m-google-lyria__lyria_generate"
             ],
             "auth": {
               "apiKey": "${{ secrets.GEMINI_API_KEY }}"
             }
           }
           EOF
-      - name: Read Production Plan JSON
-        id: read-plan-json
-        run: |
-          PLAN_JSON_CONTENT=$(cat "${{ needs.plan.outputs.plan-path }}")
-          echo "PLAN_JSON_CONTENT<<EOF" >> $GITHUB_ENV
-          echo "$PLAN_JSON_CONTENT" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
       - name: 🤖 Run Gemini Asset Generation Agent
-        id: generate-assets-agent
         uses: google-gemini/gemini-cli-action@main
         with:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           prompt: |
             あなたはマルチメディア生成AIです。
-            提供された制作計画JSONの内容に基づいて、音楽と**すべての画像**を生成してください。
-            **入力:**
-            - 制作計画JSON:
-              ```json
-              ${{ env.PLAN_JSON_CONTENT }}
-              ```
+            提供された制作計画JSONファイル (`${{ needs.plan.outputs.plan_path }}`) に基づいて、音楽と**すべての画像**を生成してください。
             **タスク:**
             1.  `ReadFileTool` を使って `${{ needs.plan.outputs.plan_path }}` の内容を読み込み、JSONをパースしてください。
             2.  `music_prompt` の値を使って `lyria_generate` ツールを実行し、音楽を `${{ needs.setup.outputs.folder-name }}/music.wav` として保存してください。
@@ -232,8 +323,6 @@ jobs:
   assemble:
     runs-on: ubuntu-latest
     needs: [setup, generate-assets]
-    outputs:
-      final-video-path: ${{ steps.assemble-video.outputs.final_video_path }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -241,52 +330,121 @@ jobs:
           ref: ${{ needs.setup.outputs.branch-name }}
       - name: Setup FFmpeg and SoX
         run: sudo apt-get update && sudo apt-get install -y ffmpeg sox
-      - name: Get music duration and image count
-        id: get-assets-info
+      - name: Create .gemini/settings.json
         run: |
-          MUSIC_PATH="${{ needs.setup.outputs.folder-name }}/music.wav"
-          NUM_IMAGES=$(ls -1 ${{ needs.setup.outputs.folder-name }}/image_*.png | wc -l)
-          MUSIC_DURATION=$(soxi -D $MUSIC_PATH)
-
-          echo "music_duration=$MUSIC_DURATION" >> $GITHUB_OUTPUT
-          echo "num_images=$NUM_IMAGES" >> $GITHUB_OUTPUT
-
-      - name: Assemble final video
-        id: assemble-video
-        run: |
-          MUSIC_DURATION=${{ steps.get-assets-info.outputs.music_duration }}
-          NUM_IMAGES=${{ steps.get-assets-info.outputs.num_images }}
-
-          if (( NUM_IMAGES == 0 )); then
-              echo "Error: No images found to assemble the video."
-              exit 1
-          fi
-
-          IMAGE_DURATION=$(echo "scale=4; $MUSIC_DURATION / $NUM_IMAGES" | bc)
-          CROSSFADE_DURATION=1
-
-          FILTER_COMPLEX_STR=""
-          INPUT_FILES=""
-          for ((i=0; i<NUM_IMAGES; i++)); do
-              INPUT_FILES+="-loop 1 -t $IMAGE_DURATION -i ${{ needs.setup.outputs.folder-name }}/image_$i.png "
-              if ((i == 0)); then
-                  FILTER_COMPLEX_STR="[0:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1[v0];[v0]"
-              else
-                  prev_i=$((i-1))
-                  FILTER_COMPLEX_STR+="[${i}:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1[v${i}];[v${prev_i}][v${i}]xfade=transition=fade:duration=${CROSSFADE_DURATION}:offset=${CURRENT_OFFSET}[v${i}];[v${i}]"
-              fi
-              CURRENT_OFFSET=$(echo "scale=4; $CURRENT_OFFSET + $IMAGE_DURATION - $CROSSFADE_DURATION" | bc)
-          done
-
-          FINAL_VIDEO_PATH="${{ needs.setup.outputs.folder-name }}/final_video.mp4"
-
-          FFMPEG_COMMAND="ffmpeg -y ${INPUT_FILES} -i ${{ needs.setup.outputs.folder-name }}/music.wav -filter_complex \"${FILTER_COMPLEX_STR}format=yuv420p[outv]\" -map \"[outv]\" -map $NUM_IMAGES:a -shortest $FINAL_VIDEO_PATH"
-
-          echo "Generated FFMPEG Command: $FFMPEG_COMMAND"
-          eval "$FFMPEG_COMMAND"
-
-          echo "final_video_path=$FINAL_VIDEO_PATH" >> $GITHUB_OUTPUT
-
+          mkdir -p .gemini
+          cat > .gemini/settings.json << EOF
+          {
+            "mcpServers": {
+              "t2i-fal-imagen4-ultra": {
+                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_ULTRA_URL }}",
+                "timeout": 300000
+              },
+              "t2i-fal-imagen4-fast": {
+                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_FAST_URL }}",
+                "timeout": 300000
+              },
+              "r2v-fal-vidu-q1": {
+                "httpUrl": "${{ secrets.MCP_R2V_FAL_VIDU_Q1_URL }}",
+                "timeout": 300000
+              },
+              "t2v-fal-veo3-fast": {
+                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEO3_FAST_URL }}",
+                "timeout": 300000
+              },
+              "i2v-fal-hailuo-02-pro": {
+                "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
+                "timeout": 300000
+              },
+              "t2m-google-lyria": {
+                "httpUrl": "${{ secrets.MCP_T2M_GOOGLE_LYRIA_URL }}",
+                "timeout": 300000
+              }
+            },
+            "defaultMode": "acceptEdits",
+            "permissions": {
+              "allow": [
+                "Bash(curl:*)",
+                "Bash(wget:*)",
+                "Bash(sleep:*)",
+                "Bash(stat:*)",
+                "Bash(find:*)",
+                "Bash(ls:*)",
+                "Bash(cat:*)",
+                "Bash(head:*)",
+                "Bash(mkdir:*)",
+                "Bash(git:checkout:*)",
+                "Bash(git:config:*)",
+                "Bash(git:push:*)",
+                "Bash(git:add:*)",
+                "Bash(git:diff:*)",
+                "Bash(git:commit:*)",
+                "Bash(git:pull:*)",
+                "Bash(date:*)",
+                "Bash(jq:*)",
+                "Bash(tr:*)",
+                "Bash(wc:*)",
+                "Bash(echo:*)",
+                "Bash(npx:*)",
+                "Bash(open:*)",
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
+                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+                "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_status",
+                "mcp__r2v-fal-vidu-q1__vidu_q1_result",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_status",
+                "mcp__t2v-fal-veo3-fast__veo3_fast_result",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
+                "mcp__t2m-google-lyria__lyria_generate"
+              ]
+            },
+            "coreTools": [
+              "ReadFileTool",
+              "WriteFileTool",
+              "EditFileTool",
+              "ShellTool",
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
+              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
+              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_status",
+              "mcp__r2v-fal-vidu-q1__vidu_q1_result",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_status",
+              "mcp__t2v-fal-veo3-fast__veo3_fast_result",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
+              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
+              "mcp__t2m-google-lyria__lyria_generate"
+            ],
+            "auth": {
+              "apiKey": "${{ secrets.GEMINI_API_KEY }}"
+            }
+          }
+          EOF
+      - name: 🤖 Run Gemini Video Editor Agent
+        uses: google-gemini/gemini-cli-action@main
+        with:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          prompt: |
+            あなたはビデオ編集の専門家AIです。
+            `${{ needs.setup.outputs.folder-name }}` ディレクトリにある音楽と画像アセットを結合し、一つの完成したミュージックビデオを作成してください。
+            **タスク:**
+            1. `soxi -D ${{ needs.setup.outputs.folder-name }}/music.wav` を実行し、音楽の長さを秒で取得してください。
+            2. `ls -1 ${{ needs.setup.outputs.folder-name }}/image_*.png | wc -l` を実行し、画像の枚数を数えてください。
+            3. 音楽の長さと画像の枚数から、各画像の表示時間を計算してください。
+            4. 計算結果を元に、`ffmpeg` コマンドを構築してください。画像間にはクロスフェード効果(`xfade`)を適用し、プロ品質の滑らかなトランジションを実現してください。
+            5. 最終的なビデオを `${{ needs.setup.outputs.folder-name }}/final_video.mp4` として保存してください。
       - name: Commit final video
         run: |
           git config --global user.name "gemini-agent[bot]"
@@ -299,11 +457,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: [setup, assemble]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.setup.outputs.branch-name }}
-          fetch-depth: 0
       - name: Create Pull Request
         run: |
           PR_BODY=$(cat <<EOF
@@ -315,7 +468,7 @@ jobs:
           - **Tempo:** ${{ github.event.inputs.tempo }}
           ### Lyrics
           > ${{ github.event.inputs.lyrics }}
-          Please review the generated files in the `${{ needs.setup.outputs.folder-name }}` directory.
+          Please review the generated files in the \`${{ needs.setup.outputs.folder-name }}\` directory.
           EOF
           )
           gh pr create \
