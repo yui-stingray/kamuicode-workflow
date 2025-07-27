@@ -79,73 +79,19 @@ jobs:
               }
             },
             "defaultMode": "acceptEdits",
-            "permissions": [
-              "Bash(curl:*)",
-              "Bash(wget:*)",
-              "Bash(sleep:*)",
-              "Bash(stat:*)",
-              "Bash(find:*)",
-              "Bash(ls:*)",
-              "Bash(cat:*)",
-              "Bash(head:*)",
-              "Bash(mkdir:*)",
-              "Bash(git:checkout:*)",
-              "Bash(git:config:*)",
-              "Bash(git:push:*)",
-              "Bash(git:add:*)",
-              "Bash(git:diff:*)",
-              "Bash(git:commit:*)",
-              "Bash(git:pull:*)",
-              "Bash(date:*)",
-              "Bash(jq:*)",
-              "Bash(tr:*)",
-              "Bash(wc:*)",
-              "Bash(echo:*)",
-              "Bash(npx:*)",
-              "Bash(open:*)",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_status",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
-              "mcp__t2m-google-lyria__lyria_generate"
-            ],
-            "coreTools": [
-              "ReadFileTool",
-              "WriteFileTool",
-              "EditFileTool",
-              "ShellTool",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_status",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
-              "mcp__t2m-google-lyria__lyria_generate"
-            ],
-            "auth": {
-              "apiKey": "${{ secrets.GEMINI_API_KEY }}"
+            "permissions": {
+              "allow": [
+                "Bash(curl:*)"
+              ]
             }
           }
           EOF
       - name: 🤖 Run Gemini Creative Director Agent
         id: gemini-plan
-        run: |
-          npm install -g @google/gemini-cli@latest
-          read -r -d '' PROMPT << EOF
+        uses: google-gemini/gemini-cli-action@main
+        with:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          prompt: |
             あなたはミュージックビデオのクリエイティブディレクターAIです。
             提供された情報に基づき、詳細な制作計画を**単一のJSONオブジェクト**として出力してください。
             **入力:**
@@ -154,7 +100,7 @@ jobs:
             - テンポ: "${{ github.event.inputs.tempo }}"
             **タスク:**
             1. 音楽生成(Lyria)用の詳細なプロンプトを作成してください。
-            2. 歌詞を分析し、各行の情景を表現する、創造的で詳細な**画像ディスクリプション**を作成してください。
+            2. 歌詞を分析し、各行に対応する画像生成(Imagen)用の創造的なプロンプトを作成してください。
             3. 全ての計画を、以下の構造を持つJSONとして、`${{ needs.setup.outputs.folder-name }}/production_plan.json` ファイルに保存してください。
             **JSON構造:**
             ```json
@@ -167,15 +113,6 @@ jobs:
             }
             ```
             **重要:** 必ず `production_plan.json` を作成し、その絶対パスを `plan_path` という名前で出力してください。
-            **厳格な出力ルール:**
-            - **絶対に、いかなる自然言語のテキスト（例：「はい、承知いたしました」など）もJSONの前後に含めないでください。**
-            - **出力は、`{` で始まり `}` で終わる、単一の有効なJSONオブジェクトでなければなりません。**
-          EOF
-
-          GEMINI_RESPONSE=$(gemini --yolo --prompt "$PROMPT")
-          echo "gemini_result=$GEMINI_RESPONSE" >> $GITHUB_OUTPUT
-          PLAN_PATH=$(echo "$GEMINI_RESPONSE" | jq -r '.plan_path')
-          echo "plan_path=$PLAN_PATH" >> $GITHUB_OUTPUT
       - name: Commit production plan
         run: |
           git config --global user.name "gemini-agent[bot]"
@@ -223,65 +160,10 @@ jobs:
               }
             },
             "defaultMode": "acceptEdits",
-            "permissions": [
-              "Bash(curl:*)",
-              "Bash(wget:*)",
-              "Bash(sleep:*)",
-              "Bash(stat:*)",
-              "Bash(find:*)",
-              "Bash(ls:*)",
-              "Bash(cat:*)",
-              "Bash(head:*)",
-              "Bash(mkdir:*)",
-              "Bash(git:checkout:*)",
-              "Bash(git:config:*)",
-              "Bash(git:push:*)",
-              "Bash(git:add:*)",
-              "Bash(git:diff:*)",
-              "Bash(git:commit:*)",
-              "Bash(git:pull:*)",
-              "Bash(date:*)",
-              "Bash(jq:*)",
-              "Bash(tr:*)",
-              "Bash(wc:*)",
-              "Bash(echo:*)",
-              "Bash(npx:*)",
-              "Bash(open:*)",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_status",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
-              "mcp__t2m-google-lyria__lyria_generate"
-            ],
-            "coreTools": [
-              "ReadFileTool",
-              "WriteFileTool",
-              "EditFileTool",
-              "ShellTool",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_status",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
-              "mcp__t2m-google-lyria__lyria_generate"
-            ],
-            "auth": {
-              "apiKey": "${{ secrets.GEMINI_API_KEY }}"
+            "permissions": {
+              "allow": [
+                "Bash(curl:*)"
+              ]
             }
           }
           EOF
@@ -367,7 +249,7 @@ jobs:
 
   assemble:
     runs-on: ubuntu-latest
-    needs: [setup, plan]
+    needs: [setup, generate-assets]
     outputs:
       final-video-path: ${{ steps.assemble-video.outputs.final_video_path }}
     steps:
@@ -412,7 +294,7 @@ jobs:
           # Build ffmpeg inputs and filtergraph from JSON array
           for ((i=0; i<NUM_IMAGES; i++)); do
               img_file=$(echo "$IMAGE_FILES_JSON" | jq -r '.['$i']')
-              INPUT_FILES+="-i "$img_file" "
+              INPUT_FILES+="-i \"$img_file\" "
               if ((i == 0)); then
                   FILTER_COMPLEX_STR="[0:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1[v0];[v0]"
               else
@@ -426,7 +308,7 @@ jobs:
           FINAL_VIDEO_PATH="${{ needs.setup.outputs.folder-name }}/final_video.mp4"
 
           # Construct the full ffmpeg command
-          FFMPEG_COMMAND="ffmpeg -y ${INPUT_FILES} -i "${{ needs.generate-assets.outputs.music-file }}" -filter_complex "${FILTER_COMPLEX_STR}format=yuv420p[outv]" -map "[outv]" -map ${NUM_IMAGES}:a -shortest "$FINAL_VIDEO_PATH""
+          FFMPEG_COMMAND="ffmpeg -y ${INPUT_FILES} -i \"${{ needs.generate-assets.outputs.music-file }}\" -filter_complex \"${FILTER_COMPLEX_STR}format=yuv420p[outv]\" -map \"[outv]\" -map ${NUM_IMAGES}:a -shortest \"$FINAL_VIDEO_PATH\""
 
           echo "Generated FFMPEG Command: $FFMPEG_COMMAND"
           eval "$FFMPEG_COMMAND"
