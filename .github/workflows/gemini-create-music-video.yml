@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup
     outputs:
-      plan-path: ${{ steps.gemini-plan.outputs.plan_path }}
+      plan-path: ${{ steps.parse-plan-output.outputs.plan_path }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -121,6 +121,11 @@ jobs:
             }
             ```
             **重要:** 必ず `production_plan.json` を作成し、その絶対パスを `plan_path` という名前で出力してください。
+      - name: Parse plan output
+        id: parse-plan-output
+        run: |
+          PLAN_PATH=$(echo "${{ steps.gemini-plan.outputs.gemini_result }}" | grep -o 'plan_path: .*' | cut -d ' ' -f 2)
+          echo "plan_path=$PLAN_PATH" >> $GITHUB_OUTPUT
       - name: Commit production plan
         run: |
           git config --global user.name "gemini-agent[bot]"
