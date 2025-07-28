@@ -317,6 +317,7 @@ jobs:
             Take the `music_prompt` value from the JSON.
             Use this prompt to generate music using the `mcp__t2m-google-lyria__lyria_generate` tool.
             Save the final audio file as `${{ needs.setup.outputs.folder-name }}/music.wav`.
+            If the API call fails, wait 10 seconds and retry up to 3 times.
       - name: 🤖 Run Gemini Image Generation Agent
         uses: google-gemini/gemini-cli-action@main
         with:
@@ -327,6 +328,7 @@ jobs:
             1. Take the `image_prompt` value.
             2. Use this prompt to generate an image using the `mcp__t2i-fal-imagen4-fast__imagen4_fast_submit` tool, poll for status, and download the result.
             3. Save the generated image sequentially, named `${{ needs.setup.outputs.folder-name }}/image_0.png`, `${{ needs.setup.outputs.folder-name }}/image_1.png`, and so on.
+            If the API call fails, wait 10 seconds and retry up to 3 times.
       - name: Commit generated assets
         run: |
           git config --global user.name "gemini-agent[bot]"
@@ -395,7 +397,7 @@ jobs:
 
           FILTER_COMPLEX=""
           for (( i=0; i<${NUM_IMAGES}; i++ )); do
-            FILTER_COMPLEX+="[${i}:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p[v${i}];"
+            FILTER_COMPLEX+="[${i}:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(ih-ih)/2,setsar=1,format=yuv420p[v${i}];"
           done
 
           LAST_STREAM="v0"
