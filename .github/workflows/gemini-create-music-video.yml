@@ -387,6 +387,8 @@ jobs:
         with:
           ref: ${{ needs.setup.outputs.branch-name }}
           fetch-depth: 0
+      - name: Create video output directory
+        run: mkdir -p ${{ needs.setup.outputs.folder-name }}/videos
       - name: Create .gemini/settings.json
         run: |
           mkdir -p .gemini
