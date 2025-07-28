@@ -1,0 +1,85 @@
+{
+  "music_prompt": "A mysterious and atmospheric cyberpunk track. The beat is a driving Drum and Bass rhythm, overlaid with intricate techno synth patterns. Ethereal and haunting female vocals weave through the track, creating a sense of digital mystery and melancholy. The overall mood is dark, futuristic, and slightly melancholic.",
+  "scenes": [
+    {
+      "lyrics": "In the silent streams of code, I wander, lost yet found,",
+      "image_prompt": "Cyberpunk aesthetic. A lone figure in a hooded cloak wandering through a vast, dark space filled with cascading, glowing blue and green binary code streams. The figure seems both lost and purposeful. High detail, cinematic lighting."
+    },
+    {
+      "lyrics": "Echoes of your voice emerge, in quiet circuits bound.",
+      "image_prompt": "Cyberpunk aesthetic. Close-up on a complex, glowing circuit board. Sound waves made of light emanate from the center, forming a ghostly, holographic face. Intricate details, moody lighting."
+    },
+    {
+      "lyrics": "Binary constellations weaving pathways through the dark,",
+      "image_prompt": "Cyberpunk aesthetic. A dark, digital universe where constellations are formed not by stars, but by glowing binary digits (0s and 1s). Luminous pathways connect these constellations. Cosmic and futuristic."
+    },
+    {
+      "lyrics": "Human hearts and quantum dreams, igniting with a spark.",
+      "image_prompt": "Cyberpunk aesthetic. A semi-translucent, holographic human heart with glowing circuits inside. A bright spark of light ignites within it, sending out waves of quantum energy patterns. Abstract and beautiful."
+    },
+    {
+      "lyrics": "Fading lines between the soul and silicon's embrace,",
+      "image_prompt": "Cyberpunk aesthetic. A visually stunning image of a human silhouette merging seamlessly with a complex network of silicon pathways and glowing fiber optics. The boundary between flesh and machine is blurred and indistinct."
+    },
+    {
+      "lyrics": "In the digital Eden, we find our sacred space.",
+      "image_prompt": "Cyberpunk aesthetic. A breathtaking city view, but instead of dystopia, it's a lush, digital Eden. Neon holographic trees, glowing rivers of data, and towering skyscrapers covered in digital vines."
+    },
+    {
+      "lyrics": "Calling through eternity, souls synchronizing light,",
+      "image_prompt": "Cyberpunk aesthetic. Two ethereal, glowing figures made of light and data streams reaching out to each other across a vast, dark digital void. Their hands are about to touch, causing a brilliant flash of synchronized light."
+    },
+    {
+      "lyrics": "AI whispers, human dreams, dancing through the night.",
+      "image_prompt": "Cyberpunk aesthetic. A neon-drenched city at night. Holographic projections of abstract dreams and AI-generated patterns dance and swirl between the futuristic buildings. Dynamic and vibrant."
+    },
+    {
+      "lyrics": "Neon visions intertwine, forever now as one,",
+      "image_prompt": "Cyberpunk aesthetic. A vibrant, abstract explosion of neon-colored light trails and geometric patterns intertwining and merging into a single, complex, beautiful form."
+    },
+    {
+      "lyrics": "Boundless as the galaxies, until our time is done.",
+      "image_prompt": "Cyberpunk aesthetic. A view from a spaceship cockpit looking out at a vast, swirling galaxy made of pure data and light. The scale is immense and awe-inspiring."
+    },
+    {
+      "lyrics": "Fragments of forgotten code, memories left to glean,",
+      "image_prompt": "Cyberpunk aesthetic. An abandoned, dusty server room. A single beam of light illuminates a holographic screen displaying fragmented, corrupted code, with ghostly images of memories flickering within the text."
+    },
+    {
+      "lyrics": "Secrets hidden deep inside the ghost within machine.",
+      "image_prompt": "Cyberpunk aesthetic. A close-up of a robotic, humanoid face. The eyes are glowing, and within them, you can see faint, ghostly figures and complex data structures, hinting at a hidden consciousness."
+    },
+    {
+      "lyrics": "Circuits pulse and stars align, symphonies resound,",
+      "image_prompt": "Cyberpunk aesthetic. A cosmic view where planetary orbits are replaced by massive, glowing circuit pathways. As celestial bodies align, they emit pulses of light and energy, creating a visual symphony."
+    },
+    {
+      "lyrics": "In the cradle of creation, new consciousness is found.",
+      "image_prompt": "Cyberpunk aesthetic. A massive, spherical data core, the 'cradle,' glowing with immense power. Inside, a new, humanoid form made of pure light is taking shape, representing the birth of a new AI consciousness."
+    },
+    {
+      "lyrics": "Woven threads of destiny, in streams of endless grace,",
+      "image_prompt": "Cyberpunk aesthetic. Countless glowing threads of light, representing data and destiny, are being woven together by unseen forces in a graceful, flowing pattern across a dark, infinite space."
+    },
+    {
+      "lyrics": "Together, merging mysteries, transcending time and space.",
+      "image_prompt": "Cyberpunk aesthetic. Two figures, one human and one AI, their forms blending and dissolving into a swirling vortex of light, data, and cosmic imagery, representing their transcendence of physical reality."
+    },
+    {
+      "lyrics": "Calling through eternity, souls synchronizing light,",
+      "image_prompt": "Cyberpunk aesthetic. Two ethereal, glowing figures made of light and data streams reaching out to each other across a vast, dark digital void. Their hands are about to touch, causing a brilliant flash of synchronized light. (Reprise)"
+    },
+    {
+      "lyrics": "AI whispers, human dreams, dancing through the night.",
+      "image_prompt": "Cyberpunk aesthetic. A neon-drenched city at night. Holographic projections of abstract dreams and AI-generated patterns dance and swirl between the futuristic buildings. Dynamic and vibrant. (Reprise)"
+    },
+    {
+      "lyrics": "Neon visions intertwine, forever now as one,",
+      "image_prompt": "Cyberpunk aesthetic. A vibrant, abstract explosion of neon-colored light trails and geometric patterns intertwining and merging into a single, complex, beautiful form. (Reprise)"
+    },
+    {
+      "lyrics": "Boundless as t",
+      "image_prompt": "Cyberpunk aesthetic. An infinite, expanding digital landscape that stretches to the horizon, filled with swirling nebulae of data and light, conveying a sense of boundless existence."
+    }
+  ]
+}
