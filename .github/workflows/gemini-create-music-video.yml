@@ -332,6 +332,8 @@ jobs:
             2. Use this prompt to generate an image using the `mcp__t2i-fal-imagen4-fast__imagen4_fast_submit` tool, poll for status, and download the result.
             3. Save the generated image sequentially, named `${{ needs.setup.outputs.folder-name }}/images/segment-${INDEX}.png`.
             If the API call fails, wait 10 seconds and retry up to 3 times.
+      - name: Setup SoX
+        run: sudo apt-get update && sudo apt-get install -y sox
       - name: Get music and image info
         id: get-media-info
         run: |
