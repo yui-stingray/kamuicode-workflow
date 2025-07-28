@@ -183,7 +183,7 @@ jobs:
       - name: Parse plan output
         id: parse-plan-output
         run: |
-          PLAN_PATH=$(echo "${{ steps.gemini-plan.outputs.gemini_result }}" | grep -o 'plan_path: .*' | cut -d ' ' -f 2)
+          PLAN_PATH=$(echo "${{ steps.gemini-plan.outputs.gemini_result }}" | sed -n 's/.*plan_path: \(.*\)/\1/p')
           echo "plan_path=$PLAN_PATH" >> $GITHUB_OUTPUT
       - name: Commit production plan
         run: |
