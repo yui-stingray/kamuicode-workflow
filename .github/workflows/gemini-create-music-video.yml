@@ -321,6 +321,8 @@ jobs:
             Use this prompt to generate music using the `mcp__t2m-google-lyria__lyria_generate` tool.
             Save the final audio file as `${{ needs.setup.outputs.folder-name }}/music/generated-music.wav`.
             If the API call fails, wait 10 seconds and retry up to 3 times.
+      - name: Create image output directory
+        run: mkdir -p ${{ needs.setup.outputs.folder-name }}/images
       - name: 🤖 Run Gemini Image Generation Agent
         uses: google-gemini/gemini-cli-action@main
         with:
