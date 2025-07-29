@@ -4,15 +4,18 @@ on:
   workflow_dispatch:
     inputs:
       lyrics:
-        description: '歌詞 (各行は改行で区切ってください)'
+        description: '
+歌詞 (各行は改行で区切ってください)'
         required: true
         type: string
       style:
-        description: '音楽と画像の全体的なスタイル (例: 水彩画風, アニメ, サイバーパンク)'
+        description: '
+音楽と画像の全体的なスタイル (例: 水彩画風, アニメ, サイバーパンク)'
         required: true
         type: string
       tempo:
-        description: '音楽のテンポ (例: スロー, 80 BPM, アップビート)'
+        description: '
+音楽のテンポ (例: スロー, 80 BPM, アップビート)'
         required: true
         type: string
 
@@ -315,28 +318,64 @@ jobs:
       - name: Create music output directory
         run: mkdir -p ${{ needs.setup.outputs.folder-name }}/music
       - name: 🤖 Run Gemini Music Generation Agent
-        uses: google-gemini/gemini-cli-action@main
-        with:
+        id: music-generation
+        env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          prompt: |
-            Read the JSON file at `${{ needs.plan.outputs.plan-path }}`.
-            Take the `music_prompt` value from the JSON.
-            Use this prompt to generate music using the `mcp__t2m-google-lyria__lyria_generate` tool.
-            Save the final audio file as `${{ needs.setup.outputs.folder-name }}/music/generated-music.wav`.
-            If the API call fails, wait 10 seconds and retry up to 3 times.
+        run: |
+          set -e
+          npm install -g @google/gemini-cli@latest
+          PROMPT=$(cat <<EOF
+          Read the JSON file at `${{ needs.plan.outputs.plan-path }}`.
+          Take the `music_prompt` value from the JSON.
+          Use this prompt to generate music using the `mcp__t2m-google-lyria__lyria_generate` tool.
+          Save the final audio file as `${{ needs.setup.outputs.folder-name }}/music/generated-music.wav`.
+EOF
+          )
+
+          for i in {1..3}; do
+            echo "Attempt $i to generate music..."
+            if response=$(gemini --yolo --prompt "$PROMPT"); then
+              echo "Music generation successful."
+              echo "$response"
+              exit 0
+            else
+              echo "Attempt $i failed. Retrying in 10 seconds..."
+              sleep 10
+            fi
+          done
+          echo "Music generation failed after 3 attempts."
+          exit 1
       - name: Create image output directory
         run: mkdir -p ${{ needs.setup.outputs.folder-name }}/images
       - name: 🤖 Run Gemini Image Generation Agent
-        uses: google-gemini/gemini-cli-action@main
-        with:
+        id: image-generation
+        env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          prompt: |
-            Read the JSON file at `${{ needs.plan.outputs.plan-path }}`.
-            For each scene in the `scenes` array:
-            1. Take the `image_prompt` value.
-            2. Use this prompt to generate an image using the `mcp__t2i-fal-imagen4-fast__imagen4_fast_submit` tool, poll for status, and download the result.
-            3. Save the generated image sequentially, named `${{ needs.setup.outputs.folder-name }}/images/segment-${INDEX}.png`.
-            If the API call fails, wait 10 seconds and retry up to 3 times.
+        run: |
+          set -e
+          npm install -g @google/gemini-cli@latest
+          PROMPT=$(cat <<EOF
+          Read the JSON file at `${{ needs.plan.outputs.plan-path }}`.
+          For each scene in the \`scenes\` array:
+          1. Take the \`image_prompt\` value.
+          2. Use this prompt to generate an image using the \`mcp__t2i-fal-imagen4-fast__imagen4_fast_submit\` tool, poll for status, and download the result.
+          3. Save the generated image sequentially, named `${{ needs.setup.outputs.folder-name }}/images/segment-` + (current index) + `.png`.
+EOF
+          )
+
+          for i in {1..3}; do
+            echo "Attempt $i to generate images..."
+            if response=$(gemini --yolo --prompt "$PROMPT"); then
+              echo "Image generation successful."
+              echo "$response"
+              exit 0
+            else
+              echo "Attempt $i failed. Retrying in 10 seconds..."
+              sleep 10
+            fi
+          done
+          echo "Image generation failed after 3 attempts."
+          exit 1
       - name: Setup SoX
         run: sudo apt-get update && sudo apt-get install -y sox
       - name: Get music and image info
