@@ -180,6 +180,7 @@ jobs:
             }
             ```
             **重要:** 必ず `production_plan.json` を作成し、その絶対パスを `plan_path` という名前で出力してください。
+            API呼び出しが失敗した場合は、10秒待ってから最大3回まで再試行してください。
       - name: Parse plan output
         id: parse-plan-output
         run: |
