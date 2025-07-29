@@ -656,7 +656,7 @@ EOF
           if [ -z "$VIDEO_FILES_JSON" ] || [ "$(echo "$VIDEO_FILES_JSON" | jq 'length')" -eq 0 ]; then
             echo "Error: No video files found."
             exit 1
-          fi
+          }
 
           # Get music duration
           MUSIC_DURATION=$(soxi -D "$MUSIC_FILE")
