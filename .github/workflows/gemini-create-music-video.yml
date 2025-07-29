@@ -4,18 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       lyrics:
-        description: '
-歌詞 (各行は改行で区切ってください)'
+        description: '歌詞 (各行は改行で区切ってください)'
         required: true
         type: string
       style:
-        description: '
-音楽と画像の全体的なスタイル (例: 水彩画風, アニメ, サイバーパンク)'
+        description: '音楽と画像の全体的なスタイル (例: 水彩画風, アニメ, サイバーパンク)'
         required: true
         type: string
       tempo:
-        description: '
-音楽のテンポ (例: スロー, 80 BPM, アップビート)'
+        description: '音楽のテンポ (例: スロー, 80 BPM, アップビート)'
         required: true
         type: string
 
@@ -158,32 +155,51 @@ jobs:
           EOF
       - name: 🤖 Run Gemini Creative Director Agent
         id: gemini-plan
-        uses: google-gemini/gemini-cli-action@main
-        with:
+        env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          prompt: |
-            あなたはミュージックビデオのクリエイティブディレクターAIです。
-            提供された情報に基づき、詳細な制作計画を**単一のJSONオブジェクト**として出力してください。
-            **入力:**
-            - 歌詞: "${{ github.event.inputs.lyrics }}"
-            - スタイル: "${{ github.event.inputs.style }}"
-            - テンポ: "${{ github.event.inputs.tempo }}"
-            **タスク:**
-            1. 音楽生成(Lyria)用の詳細なプロンプトを作成してください。
-            2. 歌詞を分析し、各行に対応する画像生成(Imagen)用の創造的なプロンプトを作成してください。
-            3. 全ての計画を、以下の構造を持つJSONとして、`${{ needs.setup.outputs.folder-name }}/production_plan.json` ファイルに保存してください。
-            **JSON構造:**
-            ```json
-            {
-              "music_prompt": "A gentle, melancholic piano melody, slow tempo, with subtle string undertones, evoking a sense of nostalgic anime.",
-              "scenes": [
-                { "lyrics": "一番星、夜空に光る。", "image_prompt": "A breathtakingly beautiful anime-style illustration of a single, brilliant first star appearing in a deep indigo twilight sky." },
-                { "lyrics": "君との思い出、心に灯る。", "image_prompt": "A warm, nostalgic anime scene. Two figures on a hill looking at the starry sky, a gentle light emanating from their hearts." }
-              ]
-            }
-            ```
-            **重要:** 必ず `production_plan.json` を作成し、その絶対パスを `plan_path` という名前で出力してください。
-            API呼び出しが失敗した場合は、10秒待ってから最大3回まで再試行してください。
+        run: |
+          set -e
+          npm install -g @google/gemini-cli@latest
+          PROMPT=$(cat <<'EOF'
+          あなたはミュージックビデオのクリエイティブディレクターAIです。
+          提供された情報に基づき、詳細な制作計画を**単一のJSONオブジェクト**として出力してください。
+          **入力:**
+          - 歌詞: "${{ github.event.inputs.lyrics }}"
+          - スタイル: "${{ github.event.inputs.style }}"
+          - テンポ: "${{ github.event.inputs.tempo }}"
+          **タスク:**
+          1. 音楽生成(Lyria)用の詳細なプロンプトを作成してください。
+          2. 歌詞を分析し、各行に対応する画像生成(Imagen)用の創造的なプロンプトを作成してください。
+          3. 全ての計画を、以下の構造を持つJSONとして、`${{ needs.setup.outputs.folder-name }}/production_plan.json` ファイルに保存してください。
+          **JSON構造:**
+          ```json
+          {
+            "music_prompt": "A gentle, melancholic piano melody, slow tempo, with subtle string undertones, evoking a sense of nostalgic anime.",
+            "scenes": [
+              { "lyrics": "一番星、夜空に光る。", "image_prompt": "A breathtakingly beautiful anime-style illustration of a single, brilliant first star appearing in a deep indigo twilight sky." },
+              { "lyrics": "君との思い出、心に灯る。", "image_prompt": "A warm, nostalgic anime scene. Two figures on a hill looking at the starry sky, a gentle light emanating from their hearts." }
+            ]
+          }
+          ```
+          **重要:** 必ず `production_plan.json` を作成し、その絶対パスを `plan_path` という名前で出力してください.
+EOF
+          )
+
+          for i in {1..3}; do
+            echo "Attempt $i to generate production plan..."
+            if response=$(gemini --yolo --prompt "$PROMPT"); then
+              echo "Plan generation successful."
+              echo "$response"
+              echo "gemini_result<<EOF" >> "$GITHUB_OUTPUT"
+              echo "$response" >> "$GITHUB_OUTPUT"
+              echo "EOF" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "Attempt $i failed. Retrying in 10 seconds..."
+            sleep 10
+          done
+          echo "Plan generation failed after 3 attempts."
+          exit 1
       - name: Parse plan output
         id: parse-plan-output
         run: |
@@ -324,7 +340,7 @@ jobs:
         run: |
           set -e
           npm install -g @google/gemini-cli@latest
-          PROMPT=$(cat <<EOF
+          PROMPT=$(cat <<'EOF'
           Read the JSON file at `${{ needs.plan.outputs.plan-path }}`.
           Take the `music_prompt` value from the JSON.
           Use this prompt to generate music using the `mcp__t2m-google-lyria__lyria_generate` tool.
@@ -338,10 +354,9 @@ EOF
               echo "Music generation successful."
               echo "$response"
               exit 0
-            else
-              echo "Attempt $i failed. Retrying in 10 seconds..."
-              sleep 10
             fi
+            echo "Attempt $i failed. Retrying in 10 seconds..."
+            sleep 10
           done
           echo "Music generation failed after 3 attempts."
           exit 1
@@ -354,12 +369,12 @@ EOF
         run: |
           set -e
           npm install -g @google/gemini-cli@latest
-          PROMPT=$(cat <<EOF
+          PROMPT=$(cat <<'EOF'
           Read the JSON file at `${{ needs.plan.outputs.plan-path }}`.
-          For each scene in the \`scenes\` array:
-          1. Take the \`image_prompt\` value.
-          2. Use this prompt to generate an image using the \`mcp__t2i-fal-imagen4-fast__imagen4_fast_submit\` tool, poll for status, and download the result.
-          3. Save the generated image sequentially, named `${{ needs.setup.outputs.folder-name }}/images/segment-` + (current index) + `.png`.
+          For each scene in the `scenes` array:
+          1. Take the `image_prompt` value.
+          2. Use this prompt to generate an image using the `mcp__t2i-fal-imagen4-fast__imagen4_fast_submit` tool, poll for status, and download the result.
+          3. Save the generated image sequentially, named `${{ needs.setup.outputs.folder-name }}/images/segment-${INDEX}.png`.
 EOF
           )
 
@@ -369,10 +384,9 @@ EOF
               echo "Image generation successful."
               echo "$response"
               exit 0
-            else
-              echo "Attempt $i failed. Retrying in 10 seconds..."
-              sleep 10
             fi
+            echo "Attempt $i failed. Retrying in 10 seconds..."
+            sleep 10
           done
           echo "Image generation failed after 3 attempts."
           exit 1
