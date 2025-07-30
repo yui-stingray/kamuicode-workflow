@@ -62,7 +62,7 @@ jobs:
                 "timeout": 300000
               },
               "t2i-fal-imagen4-fast": {
-                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_FAST_URL }}",
+                "httpUrl": "${{ secrets.MCP_T2I_F2I_IMAGEN4_FAST_URL }}",
                 "timeout": 300000
               },
               "r2v-fal-vidu-q1": {
@@ -567,7 +567,7 @@ EOF
           1. The local image path is `${base_path}/segment-${INDEX}.png`.
           2. Construct the public URL for the image: `https://raw.githubusercontent.com/${repository}/${branch}/${local_image_path}`.
           3. Read the `production_plan.json` file and get the `image_prompt` from the `scenes` array at the current index.
-          4. Use the `mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit` tool to generate a video. Use the public URL as `image_url` and the `image_prompt` as the `prompt`.
+          4. Use the `mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit` tool to generate a video. Use the public URL as `image_url` and the `prompt` as the `prompt`.
           5. Save the generated video sequentially, named `${{ needs.setup.outputs.folder-name }}/videos/segment-${INDEX}.mp4`.
 
           After generating all video segments, output a JSON array of the absolute paths to the generated video files.
