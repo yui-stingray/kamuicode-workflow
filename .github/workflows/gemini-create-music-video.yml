@@ -244,7 +244,7 @@ EOF
                 "timeout": 300000
               },
               "t2v-fal-veo3-fast": {
-                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEU3_FAST_URL }}",
+                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEO3_FAST_URL }}",
                 "timeout": 300000
               },
               "i2v-fal-hailuo-02-pro": {
@@ -460,7 +460,7 @@ EOF
                 "timeout": 300000
               },
               "t2v-fal-veo3-fast": {
-                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEU3_FAST_URL }}",
+                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEO3_FAST_URL }}",
                 "timeout": 300000
               },
               "i2v-fal-hailuo-02-pro": {
@@ -580,10 +580,7 @@ EOF
             echo "Attempt $i to generate video segments..."
             if response=$(gemini --yolo --prompt "$PROMPT"); then
               echo "Video generation successful."
-              echo "$response"
-              echo "video_files<<EOF" >> "$GITHUB_OUTPUT"
-              echo "$response" >> "$GITHUB_OUTPUT"
-              echo "EOF" >> "$GITHUB_OUTPUT"
+              echo "video_files=$response" >> "$GITHUB_OUTPUT"
               exit 0
             fi
             echo "Attempt $i failed. Retrying in 10 seconds..."
@@ -650,7 +647,7 @@ EOF
           if [ -z "$VIDEO_FILES_JSON" ] || [ "$(echo "$VIDEO_FILES_JSON" | jq 'length')" -eq 0 ]; then
             echo "Error: No video files found."
             exit 1
-          fi
+          }
 
           # Get music duration
           MUSIC_DURATION=$(soxi -D "$MUSIC_FILE")
