@@ -1,20 +1,22 @@
-name: Gemini-Native Create Music Video
+name: Gemini Native Create Music Video
 
 on:
   workflow_dispatch:
     inputs:
       lyrics:
-        description: '歌詞 (各行は改行で区切ってください)'
+        description: 'Lyrics (separate each line with a newline)'
         required: true
         type: string
       style:
-        description: '音楽と画像の全体的なスタイル (例: 水彩画風, アニメ, サイバーパンク)'
+        description: 'Overall style for music and images (e.g., watercolor, anime, cyberpunk)'
         required: true
         type: string
+        default: 'anime'
       tempo:
-        description: '音楽のテンポ (例: スロー, 80 BPM, アップビート)'
+        description: 'Music tempo (e.g., slow, 80 BPM, upbeat)'
         required: true
         type: string
+        default: '80 BPM'
 
 permissions:
   contents: write
@@ -153,7 +155,7 @@ jobs:
             }
           }
           EOF
-      - name: 🤖 Run Gemini Creative Director Agent
+      - name: Run Gemini Creative Director Agent
         id: gemini-plan
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -161,28 +163,28 @@ jobs:
           set -e
           npm install -g @google/gemini-cli@latest
           PROMPT=$(cat <<'EOF'
-          あなたはミュージックビデオのクリエイティブディレクターAIです。
-          提供された情報に基づき、詳細な制作計画を**単一のJSONオブジェクト**として出力してください。
-          **入力:**
-          - 歌詞: "${{ github.event.inputs.lyrics }}"
-          - スタイル: "${{ github.event.inputs.style }}"
-          - テンポ: "${{ github.event.inputs.tempo }}"
-          **タスク:**
-          1. 音楽生成(Lyria)用の詳細なプロンプトを作成してください。
-          2. 歌詞を分析し、各行に対応する画像生成(Imagen)用の創造的なプロンプトを作成してください。
-          3. 全ての計画を、以下の構造を持つJSONとして、`${{ needs.setup.outputs.folder-name }}/production_plan.json` ファイルに保存してください。
-          **JSON構造:**
+          You are a Music Video Creative Director AI.
+          Based on the provided information, create a detailed production plan as a single JSON object.
+          **Input:**
+          - Lyrics: "${{ github.event.inputs.lyrics }}"
+          - Style: "${{ github.event.inputs.style }}"
+          - Tempo: "${{ github.event.inputs.tempo }}"
+          **Task:**
+          1. Create a detailed prompt for music generation (Lyria).
+          2. Analyze the lyrics and create creative prompts for image generation (Imagen) for each line.
+          3. Save all plans as a JSON file with the structure below to ${{ needs.setup.outputs.folder-name }}/production_plan.json.
+          **JSON Structure:**
           ```json
           {
             "music_prompt": "A gentle, melancholic piano melody, slow tempo, with subtle string undertones, evoking a sense of nostalgic anime.",
             "scenes": [
-              { "lyrics": "一番星、夜空に光る。", "image_prompt": "A breathtakingly beautiful anime-style illustration of a single, brilliant first star appearing in a deep indigo twilight sky." },
-              { "lyrics": "君との思い出、心に灯る。", "image_prompt": "A warm, nostalgic anime scene. Two figures on a hill looking at the starry sky, a gentle light emanating from their hearts." }
+              { "lyrics": "First star, shining in the night sky.", "image_prompt": "A breathtakingly beautiful anime-style illustration of a single, brilliant first star appearing in a deep indigo twilight sky." },
+              { "lyrics": "Memories with you, lighting up my heart.", "image_prompt": "A warm, nostalgic anime scene. Two figures on a hill looking at the starry sky, a gentle light emanating from their hearts." }
             ]
           }
           ```
-          **重要:** 必ず `production_plan.json` を作成し、その絶対パスを `plan_path` という名前で出力してください。
-EOF
+          **Important:** Be sure to create `production_plan.json` and output its absolute path with the name `plan_path`.
+          EOF
           )
 
           for i in {1..3}; do
@@ -207,7 +209,7 @@ EOF
           git config --global user.email "gemini-agent[bot]@users.noreply.github.com"
           git add .
           if ! git diff --cached --exit-code; then
-            git commit -m "feat(plan): 📋 Create music video production plan" || true
+            git commit -m "feat(plan): Create music video production plan" || true
             git push || true
           else
             echo "No changes to commit in production plan."
@@ -329,7 +331,7 @@ EOF
           EOF
       - name: Create music output directory
         run: mkdir -p ${{ needs.setup.outputs.folder-name }}/music
-      - name: 🤖 Run Gemini Music Generation Agent
+      - name: Run Gemini Music Generation Agent
         id: music-generation
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -341,7 +343,7 @@ EOF
           Take the `music_prompt` value from the JSON.
           Use this prompt to generate music using the `mcp__t2m-google-lyria__lyria_generate` tool.
           Save the final audio file as `${{ needs.setup.outputs.folder-name }}/music/generated-music.wav`.
-EOF
+          EOF
           )
 
           for i in {1..3}; do
@@ -357,7 +359,7 @@ EOF
           exit 1
       - name: Create image output directory
         run: mkdir -p ${{ needs.setup.outputs.folder-name }}/images
-      - name: 🤖 Run Gemini Image Generation Agent
+      - name: Run Gemini Image Generation Agent
         id: image-generation
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -370,7 +372,7 @@ EOF
           1. Take the `image_prompt` value.
           2. Use this prompt to generate an image using the `mcp__t2i-fal-imagen4-fast__imagen4_fast_submit` tool, poll for status, and download the result.
           3. Save the generated image sequentially, named `${{ needs.setup.outputs.folder-name }}/images/segment-${INDEX}.png`.
-EOF
+          EOF
           )
 
           for i in {1..3}; do
@@ -422,7 +424,7 @@ EOF
 
           git add .
           if ! git diff --cached --exit-code; then
-            git commit -m "feat(assets): 🎨 Generate music and image assets" || true
+            git commit -m "feat(assets): Generate music and image assets" || true
             git push || true
           else
             echo "No changes to commit in generated assets."
@@ -543,7 +545,7 @@ EOF
             }
           }
           EOF
-      - name: 🤖 Generate Video Segments
+      - name: Generate Video Segments
         id: generate-video-segments
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -573,7 +575,7 @@ EOF
             "music-videos/YYYYMMDD-HHMMSS-STYLE/videos/segment-1.mp4"
           ]
           ```
-EOF
+          EOF
           )
 
           for i in {1..3}; do
@@ -613,7 +615,7 @@ EOF
 
           git add .
           if ! git diff --cached --exit-code; then
-            git commit -m "feat(videos): 🎬 Generate video segments" || true
+            git commit -m "feat(videos): Generate video segments" || true
             git push || true
           else
             echo "No changes to commit in generated videos."
@@ -647,7 +649,7 @@ EOF
           if [ -z "$VIDEO_FILES_JSON" ] || [ "$(echo "$VIDEO_FILES_JSON" | jq 'length')" -eq 0 ]; then
             echo "Error: No video files found."
             exit 1
-          }
+          fi
 
           # Get music duration
           MUSIC_DURATION=$(soxi -D "$MUSIC_FILE")
@@ -674,7 +676,7 @@ EOF
           git config --global user.email "gemini-agent[bot]@users.noreply.github.com"
           git add .
           if ! git diff --cached --exit-code; then
-            git commit -m "feat(video): 🎬 Assemble final music video" || true
+            git commit -m "feat(video): Assemble final music video" || true
             git push || true
           else
             echo "No changes to commit in final video."
