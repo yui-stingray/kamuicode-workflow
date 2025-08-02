@@ -51,16 +51,23 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
+          echo "GEMINI_API_KEY (masked): $GEMINI_API_KEY"
           mkdir -p .gemini
           cat > .gemini/settings.json << EOF
           {
             "auth": { "apiKey": "$GEMINI_API_KEY" }
           }
           EOF
+          echo "Contents of .gemini/settings.json:"
+          cat .gemini/settings.json
+          ls -la .gemini/settings.json
 
-      - name: Generate Production Plan
+      - name: 1. Generate Production Plan
         id: plan
         run: |
+          echo "Checking .gemini/settings.json before running gemini command:"
+          ls -la /home/runner/.gemini/settings.json || true
+          cat /home/runner/.gemini/settings.json || true
           FOLDER_NAME="${{ steps.setup.outputs.folder-name }}"
           PLAN_FILE="$FOLDER_NAME/production_plan.json"
           PROMPT=$(cat <<'EOF'
