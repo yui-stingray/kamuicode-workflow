@@ -1,4 +1,4 @@
-name: Gemini Native Create Music Video
+name: "Gemini Native Create Music Video"
 
 on:
   workflow_dispatch:
@@ -58,37 +58,37 @@ jobs:
           }
           EOF
 
-      - name: 1. Generate Production Plan
+      - name: Generate Production Plan
         id: plan
         run: |
           FOLDER_NAME="${{ steps.setup.outputs.folder-name }}"
           PLAN_FILE="$FOLDER_NAME/production_plan.json"
           PROMPT=$(cat <<'EOF'
-You are a Music Video Creative Director AI.
-Based on the provided information, create a detailed production plan as a single JSON object.
-**Input:**
-- Lyrics: "${{ github.event.inputs.lyrics }}"
-- Style: "${{ github.event.inputs.style }}"
-- Tempo: "${{ github.event.inputs.tempo }}"
-**Task:**
-1. Create a detailed prompt for music generation (Lyria).
-2. Analyze the lyrics and create creative prompts for image generation (Imagen) for each line.
-**JSON Structure:**
-```json
-{
-  "music_prompt": "A gentle, melancholic piano melody, slow tempo, with subtle string undertones, evoking a sense of nostalgic anime.",
-  "scenes": [
-    { "index": 0, "lyrics": "First star, shining in the night sky.", "image_prompt": "A breathtakingly beautiful anime-style illustration of a single, brilliant first star appearing in a deep indigo twilight sky." },
-    { "index": 1, "lyrics": "Memories with you, lighting up my heart.", "image_prompt": "A warm, nostalgic anime scene. Two figures on a hill looking at the starry sky, a gentle light emanating from their hearts." }
-  ]
-}
-```
-EOF
-)
+          You are a Music Video Creative Director AI.
+          Based on the provided information, create a detailed production plan as a single JSON object.
+          **Input:**
+          - Lyrics: "${{ github.event.inputs.lyrics }}"
+          - Style: "${{ github.event.inputs.style }}"
+          - Tempo: "${{ github.event.inputs.tempo }}"
+          **Task:**
+          1. Create a detailed prompt for music generation (Lyria).
+          2. Analyze the lyrics and create creative prompts for image generation (Imagen) for each line.
+          **JSON Structure:**
+          ```json
+          {
+            "music_prompt": "A gentle, melancholic piano melody, slow tempo, with subtle string undertones, evoking a sense of nostalgic anime.",
+            "scenes": [
+              { "index": 0, "lyrics": "First star, shining in the night sky.", "image_prompt": "A breathtakingly beautiful anime-style illustration of a single, brilliant first star appearing in a deep indigo twilight sky." },
+              { "index": 1, "lyrics": "Memories with you, lighting up my heart.", "image_prompt": "A warm, nostalgic anime scene. Two figures on a hill looking at the starry sky, a gentle light emanating from their hearts." }
+            ]
+          }
+          ```
+          EOF
+          )
           gemini --yolo --prompt "$PROMPT" > "$PLAN_FILE"
           echo "plan_file=$PLAN_FILE" >> $GITHUB_OUTPUT
 
-      - name: 2. Generate Music
+      - name: Generate Music
         id: music
         run: |
           FOLDER_NAME="${{ steps.setup.outputs.folder-name }}"
@@ -98,7 +98,7 @@ EOF
           gemini lyria generate --prompt "$MUSIC_PROMPT" --output "$MUSIC_FILE"
           echo "music_file=$MUSIC_FILE" >> $GITHUB_OUTPUT
 
-      - name: 3. Generate Images in Parallel
+      - name: Generate Images in Parallel
         id: images
         run: |
           FOLDER_NAME="${{ steps.setup.outputs.folder-name }}"
@@ -125,7 +125,7 @@ EOF
           wait
           echo "Image generation complete."
 
-      - name: 4. Generate Videos in Parallel
+      - name: Generate Videos in Parallel
         id: videos
         run: |
           FOLDER_NAME="${{ steps.setup.outputs.folder-name }}"
@@ -156,7 +156,7 @@ EOF
           wait
           echo "Video generation complete."
 
-      - name: 5. Assemble Final Video
+      - name: Assemble Final Video
         id: assemble
         run: |
           FOLDER_NAME="${{ steps.setup.outputs.folder-name }}"
@@ -174,7 +174,7 @@ EOF
           ffmpeg -y -i "$VIDEO_DIR/concatenated.mp4" -i "$MUSIC_FILE" -c:v copy -c:a aac -b:a 192k -shortest "$FINAL_VIDEO"
           echo "final_video_path=$FINAL_VIDEO" >> $GITHUB_OUTPUT
 
-      - name: 6. Commit and Push All Files
+      - name: Commit and Push All Files
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
@@ -182,7 +182,7 @@ EOF
           git commit -m "feat: Create music video for '${{ github.event.inputs.style }}'"
           git push -u origin "${{ steps.setup.outputs.branch-name }}"
 
-      - name: 7. Create Pull Request
+      - name: Create Pull Request
         env:
           GH_TOKEN: ${{ secrets.PAT_TOKEN || github.token }}
           BRANCH_NAME: ${{ steps.setup.outputs.branch-name }}
@@ -197,7 +197,7 @@ EOF
           - **Tempo:** ${{ github.event.inputs.tempo }}
           ### Lyrics
           > ${{ github.event.inputs.lyrics }}
-          Please review the generated files in the `$FOLDER_NAME` directory.
+          Please review the generated files in the \`$FOLDER_NAME\` directory.
           EOF
           )
           gh pr create \
