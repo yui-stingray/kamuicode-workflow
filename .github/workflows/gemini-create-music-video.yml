@@ -23,14 +23,18 @@ permissions:
   pull-requests: write
 
 jobs:
-  setup:
+  create-music-video:
     runs-on: ubuntu-latest
-    outputs:
-      branch-name: ${{ steps.setup.outputs.branch-name }}
-      folder-name: ${{ steps.setup.outputs.folder-name }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg sox bc jq
+          npm install -g @google/gemini-cli@latest
+
       - name: Create unique branch and folder
         id: setup
         run: |
@@ -40,129 +44,26 @@ jobs:
           FOLDER_NAME="music-videos/${TIMESTAMP}-${SAFE_STYLE}"
           echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
           echo "folder-name=$FOLDER_NAME" >> $GITHUB_OUTPUT
+          mkdir -p "$FOLDER_NAME"/{music,images,videos,final}
           git checkout -b "$BRANCH_NAME"
-          git push -u origin "$BRANCH_NAME"
 
-  plan:
-    runs-on: ubuntu-latest
-    needs: setup
-    outputs:
-      plan-path: ${{ steps.parse-plan-output.outputs.plan_path }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.setup.outputs.branch-name }}
-      - name: Create .gemini/settings.json
+      - name: Create Gemini Settings
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           mkdir -p .gemini
           cat > .gemini/settings.json << EOF
           {
-            "mcpServers": {
-              "t2i-fal-imagen4-ultra": {
-                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_ULTRA_URL }}",
-                "timeout": 300000
-              },
-              "t2i-fal-imagen4-fast": {
-                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_FAST_URL }}",
-                "timeout": 300000
-              },
-              "r2v-fal-vidu-q1": {
-                "httpUrl": "${{ secrets.MCP_R2V_FAL_VIDU_Q1_URL }}",
-                "timeout": 300000
-              },
-              "t2v-fal-veo3-fast": {
-                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEO3_FAST_URL }}",
-                "timeout": 300000
-              },
-              "i2v-fal-hailuo-02-pro": {
-                "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
-                "timeout": 300000
-              },
-              "t2m-google-lyria": {
-                "httpUrl": "${{ secrets.MCP_T2M_GOOGLE_LYRIA_URL }}",
-                "timeout": 300000
-              }
-            },
-            "defaultMode": "acceptEdits",
-            "permissions": {
-              "allow": [
-                "Bash(curl:*)",
-                "Bash(wget:*)",
-                "Bash(sleep:*)",
-                "Bash(stat:*)",
-                "Bash(find:*)",
-                "Bash(ls:*)",
-                "Bash(cat:*)",
-                "Bash(head:*)",
-                "Bash(mkdir:*)",
-                "Bash(git:checkout:*)",
-                "Bash(git:config:*)",
-                "Bash(git:push:*)",
-                "Bash(git:add:*)",
-                "Bash(git:diff:*)",
-                "Bash(git:commit:*)",
-                "Bash(git:pull:*)",
-                "Bash(date:*)",
-                "Bash(jq:*)",
-                "Bash(tr:*)",
-                "Bash(wc:*)",
-                "Bash(echo:*)",
-                "Bash(npx:*)",
-                "Bash(open:*)",
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
-                "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
-                "mcp__r2v-fal-vidu-q1__vidu_q1_status",
-                "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_status",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_result",
-                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
-                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
-                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
-                "mcp__t2m-google-lyria__lyria_generate"
-              ]
-            },
-            "coreTools": [
-              "ReadFileTool",
-              "WriteFileTool",
-              "EditFileTool",
-              "ShellTool",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_status",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_status",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_result",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
-              "mcp__t2m-google-lyria__lyria_generate"
-            ],
-            "auth": {
-              "apiKey": "${{ secrets.GEMINI_API_KEY }}"
-            }
+            "auth": { "apiKey": "$GEMINI_API_KEY" }
           }
           EOF
-      - name: Run Gemini Creative Director Agent
-        id: gemini-plan
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+      - name: 1. Generate Production Plan
+        id: plan
         run: |
-          set -e
-          npm install -g @google/gemini-cli@latest
-          PROMPT=$(cat <<'EOF'
+          FOLDER_NAME="${{ steps.setup.outputs.folder-name }}"
+          PLAN_FILE="$FOLDER_NAME/production_plan.json"
+          PROMPT=$(cat <<EOF
           You are a Music Video Creative Director AI.
           Based on the provided information, create a detailed production plan as a single JSON object.
           **Input:**
@@ -172,7 +73,6 @@ jobs:
           **Task:**
           1. Create a detailed prompt for music generation (Lyria).
           2. Analyze the lyrics and create creative prompts for image generation (Imagen) for each line.
-          3. Save all plans as a JSON file with the structure below to ${{ needs.setup.outputs.folder-name }}/production_plan.json.
           **JSON Structure:**
           ```json
           {
@@ -183,510 +83,86 @@ jobs:
             ]
           }
           ```
-          **Important:** Be sure to create `production_plan.json` and output its absolute path with the name `plan_path`.
           EOF
           )
+          gemini --yolo --prompt "$PROMPT" > "$PLAN_FILE"
+          echo "plan_file=$PLAN_FILE" >> $GITHUB_OUTPUT
 
-          for i in {1..3}; do
-            echo "Attempt $i to generate production plan..."
-            if gemini --yolo --prompt "$PROMPT"; then
-              echo "Plan generation successful."
-              exit 0
-            fi
-            echo "Attempt $i failed. Retrying in 10 seconds..."
-            sleep 10
+      - name: 2. Generate Music
+        id: music
+        run: |
+          FOLDER_NAME="${{ steps.setup.outputs.folder-name }}"
+          PLAN_FILE="${{ steps.plan.outputs.plan_file }}"
+          MUSIC_PROMPT=$(jq -r '.music_prompt' "$PLAN_FILE")
+          MUSIC_FILE="$FOLDER_NAME/music/generated-music.wav"
+          gemini lyria generate --prompt "$MUSIC_PROMPT" --output "$MUSIC_FILE"
+          echo "music_file=$MUSIC_FILE" >> $GITHUB_OUTPUT
+
+      - name: 3. Generate Images in Parallel
+        id: images
+        run: |
+          FOLDER_NAME="${{ steps.setup.outputs.folder-name }}"
+          PLAN_FILE="${{ steps.plan.outputs.plan_file }}"
+          IMAGE_DIR="$FOLDER_NAME/images"
+
+          jq -c '.scenes[]' "$PLAN_FILE" | while read -r scene;
+          do
+            INDEX=$(jq -r '. | .index' <<< "$scene")
+            PROMPT=$(jq -r '.image_prompt' <<< "$scene")
+            (gemini imagen generate --prompt "$PROMPT" --output "$IMAGE_DIR/segment-$INDEX.png") &
           done
-          echo "Plan generation failed after 3 attempts."
-          exit 1
-      - name: Parse plan output
-        id: parse-plan-output
-        run: |
-          PLAN_PATH="${{ needs.setup.outputs.folder-name }}/production_plan.json"
-          echo "plan_path=$PLAN_PATH" >> $GITHUB_OUTPUT
-      - name: Commit production plan
-        run: |
-          git config --global user.name "gemini-agent[bot]"
-          git config --global user.email "gemini-agent[bot]@users.noreply.github.com"
-          git add .
-          if ! git diff --cached --exit-code; then
-            git commit -m "feat(plan): Create music video production plan" || true
-            git push || true
-          else
-            echo "No changes to commit in production plan."
-          fi
+          wait
+          echo "Image generation complete."
 
-  generate-assets:
-    runs-on: ubuntu-latest
-    needs: [setup, plan]
-    outputs:
-      music-duration: ${{ steps.get-media-info.outputs.music_duration }}
-      num-images: ${{ steps.get-media-info.outputs.num_images }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.setup.outputs.branch-name }}
-          fetch-depth: 0
-      - name: Create .gemini/settings.json
+      - name: 4. Generate Videos in Parallel
+        id: videos
         run: |
-          mkdir -p .gemini
-          cat > .gemini/settings.json << EOF
-          {
-            "mcpServers": {
-              "t2i-fal-imagen4-ultra": {
-                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_ULTRA_URL }}",
-                "timeout": 300000
-              },
-              "t2i-fal-imagen4-fast": {
-                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_FAST_URL }}",
-                "timeout": 300000
-              },
-              "r2v-fal-vidu-q1": {
-                "httpUrl": "${{ secrets.MCP_R2V_FAL_VIDU_Q1_URL }}",
-                "timeout": 300000
-              },
-              "t2v-fal-veo3-fast": {
-                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEO3_FAST_URL }}",
-                "timeout": 300000
-              },
-              "i2v-fal-hailuo-02-pro": {
-                "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
-                "timeout": 300000
-              },
-              "t2m-google-lyria": {
-                "httpUrl": "${{ secrets.MCP_T2M_GOOGLE_LYRIA_URL }}",
-                "timeout": 300000
-              }
-            },
-            "defaultMode": "acceptEdits",
-            "permissions": {
-              "allow": [
-                "Bash(curl:*)",
-                "Bash(wget:*)",
-                "Bash(sleep:*)",
-                "Bash(stat:*)",
-                "Bash(find:*)",
-                "Bash(ls:*)",
-                "Bash(cat:*)",
-                "Bash(head:*)",
-                "Bash(mkdir:*)",
-                "Bash(git:checkout:*)",
-                "Bash(git:config:*)",
-                "Bash(git:push:*)",
-                "Bash(git:add:*)",
-                "Bash(git:diff:*)",
-                "Bash(git:commit:*)",
-                "Bash(git:pull:*)",
-                "Bash(date:*)",
-                "Bash(jq:*)",
-                "Bash(tr:*)",
-                "Bash(wc:*)",
-                "Bash(echo:*)",
-                "Bash(npx:*)",
-                "Bash(open:*)",
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
-                "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
-                "mcp__r2v-fal-vidu-q1__vidu_q1_status",
-                "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_status",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_result",
-                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
-                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
-                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
-                "mcp__t2m-google-lyria__lyria_generate"
-              ]
-            },
-            "coreTools": [
-              "ReadFileTool",
-              "WriteFileTool",
-              "EditFileTool",
-              "ShellTool",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_status",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_status",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_result",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
-              "mcp__t2m-google-lyria__lyria_generate"
-            ],
-            "auth": {
-              "apiKey": "${{ secrets.GEMINI_API_KEY }}"
-            }
-          }
-          EOF
-      - name: Create music output directory
-        run: mkdir -p ${{ needs.setup.outputs.folder-name }}/music
-      - name: Run Gemini Music Generation Agent
-        id: music-generation
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          set -e
-          npm install -g @google/gemini-cli@latest
-          PROMPT=$(cat <<'EOF'
-          Read the JSON file at `${{ needs.plan.outputs.plan-path }}`.
-          Take the `music_prompt` value from the JSON.
-          Use this prompt to generate music using the `mcp__t2m-google-lyria__lyria_generate` tool.
-          Save the final audio file as `${{ needs.setup.outputs.folder-name }}/music/generated-music.wav`.
-          EOF
-          )
+          FOLDER_NAME="${{ steps.setup.outputs.folder-name }}"
+          PLAN_FILE="${{ steps.plan.outputs.plan_file }}"
+          IMAGE_DIR="$FOLDER_NAME/images"
+          VIDEO_DIR="$FOLDER_NAME/videos"
 
-          for i in {1..3}; do
-            echo "Attempt $i to generate music..."
-            if gemini --yolo --prompt "$PROMPT"; then
-              echo "Music generation successful."
-              exit 0
-            fi
-            echo "Attempt $i failed. Retrying in 10 seconds..."
-            sleep 10
+          jq -c '.scenes[]' "$PLAN_FILE" | while read -r scene;
+          do
+            INDEX=$(jq -r '. | .index' <<< "$scene")
+            PROMPT=$(jq -r '.image_prompt' <<< "$scene")
+            IMAGE_FILE="$IMAGE_DIR/segment-$INDEX.png"
+            (gemini hailuo generate --image "$IMAGE_FILE" --prompt "$PROMPT" --output "$VIDEO_DIR/segment-$INDEX.mp4") &
           done
-          echo "Music generation failed after 3 attempts."
-          exit 1
-      - name: Create image output directory
-        run: mkdir -p ${{ needs.setup.outputs.folder-name }}/images
-      - name: Run Gemini Image Generation Agent
-        id: image-generation
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          wait
+          echo "Video generation complete."
+
+      - name: 5. Assemble Final Video
+        id: assemble
         run: |
-          set -e
-          npm install -g @google/gemini-cli@latest
-          PROMPT=$(cat <<'EOF'
-          Read the JSON file at `${{ needs.plan.outputs.plan-path }}`.
-          For each scene in the `scenes` array:
-          1. Take the `image_prompt` value.
-          2. Use this prompt to generate an image using the `mcp__t2i-fal-imagen4-fast__imagen4_fast_submit` tool, poll for status, and download the result.
-          3. Save the generated image sequentially, named `${{ needs.setup.outputs.folder-name }}/images/segment-${INDEX}.png`.
-          EOF
-          )
+          FOLDER_NAME="${{ steps.setup.outputs.folder-name }}"
+          MUSIC_FILE="${{ steps.music.outputs.music_file }}"
+          VIDEO_DIR="$FOLDER_NAME/videos"
+          FINAL_VIDEO="$FOLDER_NAME/final/final-music-video.mp4"
 
-          for i in {1..3}; do
-            echo "Attempt $i to generate images..."
-            if gemini --yolo --prompt "$PROMPT"; then
-              echo "Image generation successful."
-              exit 0
-            fi
-            echo "Attempt $i failed. Retrying in 10 seconds..."
-            sleep 10
-          done
-          echo "Image generation failed after 3 attempts."
-          exit 1
-      - name: Setup SoX
-        run: sudo apt-get update && sudo apt-get install -y sox
-      - name: Get music and image info
-        id: get-media-info
-        run: |
-          FOLDER_NAME="${{ needs.setup.outputs.folder-name }}"
-          MUSIC_FILE="${FOLDER_NAME}/music/generated-music.wav"
-          NUM_IMAGES=$(find "${FOLDER_NAME}/images" -name "segment-*.png" | wc -l)
-          MUSIC_DURATION=$(soxi -D "$MUSIC_FILE")
-
-          echo "music_duration=$MUSIC_DURATION" >> $GITHUB_OUTPUT
-          echo "num_images=$NUM_IMAGES" >> $GITHUB_OUTPUT
-      - name: Commit generated assets
-        run: |
-          git config --global user.name "gemini-agent[bot]"
-          git config --global user.email "gemini-agent[bot]@users.noreply.github.com"
-
-          FOLDER_NAME="${{ needs.setup.outputs.folder-name }}"
-          MUSIC_FILE="${FOLDER_NAME}/music/generated-music.wav"
-          FIRST_IMAGE="${FOLDER_NAME}/images/segment-0.png"
-          TIMEOUT=60 # seconds
-          ELAPSED_TIME=0
-
-          echo "Waiting for generated files to appear..."
-          while [ ! -f "$MUSIC_FILE" ] || [ ! -f "$FIRST_IMAGE" ]; do
-            if [ "$ELAPSED_TIME" -ge "$TIMEOUT" ]; then
-              echo "Error: Timeout waiting for generated files."
-              ls -lR "$FOLDER_NAME" || true # List contents for debugging
-              exit 1
-            fi
-            echo "Files not found yet. Waiting 5 seconds..."
-            sleep 5
-            ELAPSED_TIME=$((ELAPSED_TIME + 5))
-          done
-          echo "Generated files found. Proceeding with commit."
-
-          git add .
-          if ! git diff --cached --exit-code; then
-            git commit -m "feat(assets): Generate music and image assets" || true
-            git push || true
-          else
-            echo "No changes to commit in generated assets."
-          fi
-
-  generate-videos:
-    runs-on: ubuntu-latest
-    needs: [setup, generate-assets]
-    outputs:
-      video-files: ${{ steps.generate-video-segments.outputs.video_files }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.setup.outputs.branch-name }}
-          fetch-depth: 0
-      - name: Create video output directory
-        run: mkdir -p ${{ needs.setup.outputs.folder-name }}/videos
-      - name: Create .gemini/settings.json
-        run: |
-          mkdir -p .gemini
-          cat > .gemini/settings.json << EOF
-          {
-            "mcpServers": {
-              "t2i-fal-imagen4-ultra": {
-                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_ULTRA_URL }}",
-                "timeout": 300000
-              },
-              "t2i-fal-imagen4-fast": {
-                "httpUrl": "${{ secrets.MCP_T2I_FAL_IMAGEN4_FAST_URL }}",
-                "timeout": 300000
-              },
-              "r2v-fal-vidu-q1": {
-                "httpUrl": "${{ secrets.MCP_R2V_FAL_VIDU_Q1_URL }}",
-                "timeout": 300000
-              },
-              "t2v-fal-veo3-fast": {
-                "httpUrl": "${{ secrets.MCP_T2V_FAL_VEO3_FAST_URL }}",
-                "timeout": 300000
-              },
-              "i2v-fal-hailuo-02-pro": {
-                "httpUrl": "${{ secrets.MCP_I2V_FAL_HAILUO_02_PRO_URL }}",
-                "timeout": 300000
-              },
-              "t2m-google-lyria": {
-                "httpUrl": "${{ secrets.MCP_T2M_GOOGLE_LYRIA_URL }}",
-                "timeout": 300000
-              }
-            },
-            "defaultMode": "acceptEdits",
-            "permissions": {
-              "allow": [
-                "Bash(curl:*)",
-                "Bash(wget:*)",
-                "Bash(sleep:*)",
-                "Bash(stat:*)",
-                "Bash(find:*)",
-                "Bash(ls:*)",
-                "Bash(cat:*)",
-                "Bash(head:*)",
-                "Bash(mkdir:*)",
-                "Bash(git:checkout:*)",
-                "Bash(git:config:*)",
-                "Bash(git:push:*)",
-                "Bash(git:add:*)",
-                "Bash(git:diff:*)",
-                "Bash(git:commit:*)",
-                "Bash(git:pull:*)",
-                "Bash(date:*)",
-                "Bash(jq:*)",
-                "Bash(tr:*)",
-                "Bash(wc:*)",
-                "Bash(echo:*)",
-                "Bash(npx:*)",
-                "Bash(open:*)",
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
-                "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
-                "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
-                "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
-                "mcp__r2v-fal-vidu-q1__vidu_q1_status",
-                "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_status",
-                "mcp__t2v-fal-veo3-fast__veo3_fast_result",
-                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
-                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
-                "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
-                "mcp__t2m-google-lyria__lyria_generate"
-              ]
-            },
-            "coreTools": [
-              "ReadFileTool",
-              "WriteFileTool",
-              "EditFileTool",
-              "ShellTool",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_submit",
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_status", 
-              "mcp__t2i-fal-imagen4-ultra__imagen4_ultra_result",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_submit",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_status",
-              "mcp__t2i-fal-imagen4-fast__imagen4_fast_result",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_submit",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_status",
-              "mcp__r2v-fal-vidu-q1__vidu_q1_result",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_submit",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_status",
-              "mcp__t2v-fal-veo3-fast__veo3_fast_result",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_status",
-              "mcp__i2v-fal-hailuo-02-pro__hailuo_02_result",
-              "mcp__t2m-google-lyria__lyria_generate"
-            ],
-            "auth": {
-              "apiKey": "${{ secrets.GEMINI_API_KEY }}"
-            }
-          }
-          EOF
-      - name: Generate Video Segments
-        id: generate-video-segments
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: |
-          set -e
-          npm install -g @google/gemini-cli@latest
-          PROMPT=$(cat <<'EOF'
-          Read the JSON file at `${{ needs.plan.outputs.plan-path }}`.
-          The music duration is `${{ needs.generate-assets.outputs.music-duration }}` seconds.
-          The number of images generated is `${{ needs.generate-assets.outputs.num-images }}`.
-          The base path for the images is `${{ needs.setup.outputs.folder-name }}/images`.
-          The repository is `${{ github.repository }}` and the branch is `${{ needs.setup.outputs.branch-name }}`.
-
-          For each image from index 0 to (num_images - 1):
-          1. The local image path is `${base_path}/segment-${INDEX}.png`.
-          2. Construct the public URL for the image: `https://raw.githubusercontent.com/${repository}/${branch}/${local_image_path}`.
-          3. Read the `production_plan.json` file and get the `image_prompt` from the `scenes` array at the current index.
-          4. Use the `mcp__i2v-fal-hailuo-02-pro__hailuo_02_submit` tool to generate a video. Use the public URL as `image_url` and the `prompt` as the `prompt`.
-          5. Save the generated video sequentially, named `${{ needs.setup.outputs.folder-name }}/videos/segment-${INDEX}.mp4`.
-
-          After generating all video segments, output a JSON array of the absolute paths to the generated video files.
-
-          **Output JSON Structure:**
-          ```json
-          [
-            "music-videos/YYYYMMDD-HHMMSS-STYLE/videos/segment-0.mp4",
-            "music-videos/YYYYMMDD-HHMMSS-STYLE/videos/segment-1.mp4"
-          ]
-          ```
-          EOF
-          )
-
-          for i in {1..3}; do
-            echo "Attempt $i to generate video segments..."
-            if response=$(gemini --yolo --prompt "$PROMPT"); then
-              echo "Video generation successful."
-              echo "video_files=$response" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-            echo "Attempt $i failed. Retrying in 10 seconds..."
-            sleep 10
-          done
-          echo "Video generation failed after 3 attempts."
-          exit 1
-      - name: Commit generated videos
-        run: |
-          git config --global user.name "gemini-agent[bot]"
-          git config --global user.email "gemini-agent[bot]@users.noreply.github.com"
-
-          FOLDER_NAME="${{ needs.setup.outputs.folder-name }}"
-          FIRST_VIDEO="${FOLDER_NAME}/videos/segment-0.mp4"
-          TIMEOUT=180 # seconds (longer timeout for video generation)
-          ELAPSED_TIME=0
-
-          echo "Waiting for generated video files to appear..."
-          while [ ! -f "$FIRST_VIDEO" ]; do
-            if [ "$ELAPSED_TIME" -ge "$TIMEOUT" ]; then
-              echo "Error: Timeout waiting for generated video files."
-              ls -lR "$FOLDER_NAME/videos" || true # List contents for debugging
-              exit 1
-            fi
-            echo "Video files not found yet. Waiting 10 seconds..."
-            sleep 10
-            ELAPSED_TIME=$((ELAPSED_TIME + 10))
-          done
-          echo "Generated video files found. Proceeding with commit."
-
-          git add .
-          if ! git diff --cached --exit-code; then
-            git commit -m "feat(videos): Generate video segments" || true
-            git push || true
-          else
-            echo "No changes to commit in generated videos."
-          fi
-
-  assemble:
-    runs-on: ubuntu-latest
-    needs: [setup, generate-videos]
-    outputs:
-      final-video-path: ${{ steps.assemble-video.outputs.final_video_path }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.setup.outputs.branch-name }}
-          fetch-depth: 0
-      - name: Setup FFmpeg and SoX
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg sox bc
-      - name: Assemble Video
-        id: assemble-video
-        run: |
-          FOLDER_NAME="${{ needs.setup.outputs.folder-name }}"
-          MUSIC_FILE="${FOLDER_NAME}/music/generated-music.wav"
-          VIDEO_FILES_JSON="${{ needs.generate-videos.outputs.video-files }}"
-
-          if [ -z "$MUSIC_FILE" ]; then
-            echo "Error: Music file not found in ${FOLDER_NAME}/music/generated-music.wav"
-            exit 1
-          fi
-
-          if [ -z "$VIDEO_FILES_JSON" ] || [ "$(echo "$VIDEO_FILES_JSON" | jq 'length')" -eq 0 ]; then
-            echo "Error: No video files found."
-            exit 1
-          fi
-
-          # Get music duration
-          MUSIC_DURATION=$(soxi -D "$MUSIC_FILE")
-
-          # Create concat list for FFmpeg
-          CONCAT_LIST="${FOLDER_NAME}/videos/concat_list.txt"
-          echo "$VIDEO_FILES_JSON" | jq -r '.[]' | while read -r video_file; do
-            echo "file '$video_file'" >> "$CONCAT_LIST"
-          done
+          # Create a list of video files for concatenation
+          find "$VIDEO_DIR" -name "segment-*.mp4" | sort -V | sed "s/^/file '/" | sed "s/$/'/" > "$VIDEO_DIR/concat_list.txt"
 
           # Concatenate videos
-          CONCAT_VIDEO="${FOLDER_NAME}/videos/concatenated_video.mp4"
-          ffmpeg -y -f concat -safe 0 -i "$CONCAT_LIST" -c copy "$CONCAT_VIDEO"
+          ffmpeg -y -f concat -safe 0 -i "$VIDEO_DIR/concat_list.txt" -c copy "$VIDEO_DIR/concatenated.mp4"
 
-          # Trim or loop video to match music duration
-          FINAL_VIDEO_PATH="${FOLDER_NAME}/final/final-music-video.mp4"
-          ffmpeg -y -i "$CONCAT_VIDEO" -i "$MUSIC_FILE" -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -shortest "$FINAL_VIDEO_PATH"
+          # Add music
+          ffmpeg -y -i "$VIDEO_DIR/concatenated.mp4" -i "$MUSIC_FILE" -c:v copy -c:a aac -b:a 192k -shortest "$FINAL_VIDEO"
+          echo "final_video_path=$FINAL_VIDEO" >> $GITHUB_OUTPUT
 
-          echo "final_video_path=$FINAL_VIDEO_PATH" >> $GITHUB_OUTPUT
-
-      - name: Commit final video
+      - name: 6. Commit and Push All Files
         run: |
-          git config --global user.name "gemini-agent[bot]"
-          git config --global user.email "gemini-agent[bot]@users.noreply.github.com"
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add .
-          if ! git diff --cached --exit-code; then
-            git commit -m "feat(video): Assemble final music video" || true
-            git push || true
-          else
-            echo "No changes to commit in final video."
-          fi
+          git commit -m "feat: Create music video for '${{ github.event.inputs.style }}'"
+          git push -u origin "${{ steps.setup.outputs.branch-name }}"
 
-  create-pr:
-    runs-on: ubuntu-latest
-    needs: [setup, assemble]
-    steps:
-      - name: Create Pull Request
+      - name: 7. Create Pull Request
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN || github.token }}
+          BRANCH_NAME: ${{ steps.setup.outputs.branch-name }}
+          FOLDER_NAME: ${{ steps.setup.outputs.folder-name }}
         run: |
           PR_BODY=$(cat <<EOF
           🎵 **New AI-Generated Music Video is Ready!**
@@ -697,13 +173,11 @@ jobs:
           - **Tempo:** ${{ github.event.inputs.tempo }}
           ### Lyrics
           > ${{ github.event.inputs.lyrics }}
-          Please review the generated files in the `${{ needs.setup.outputs.folder-name }}` directory.
+          Please review the generated files in the `$FOLDER_NAME` directory.
           EOF
           )
           gh pr create \
             --title "🎵 New Music Video: ${{ github.event.inputs.style }}" \
             --body "$PR_BODY" \
             --base main \
-            --head "${{ needs.setup.outputs.branch-name }}"
-        env:
-          GH_TOKEN: ${{ secrets.PAT_TOKEN || github.token }}
+            --head "$BRANCH_NAME"
