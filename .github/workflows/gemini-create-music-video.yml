@@ -63,28 +63,28 @@ jobs:
         run: |
           FOLDER_NAME="${{ steps.setup.outputs.folder-name }}"
           PLAN_FILE="$FOLDER_NAME/production_plan.json"
-          PROMPT=$(cat <<EOF
-          You are a Music Video Creative Director AI.
-          Based on the provided information, create a detailed production plan as a single JSON object.
-          **Input:**
-          - Lyrics: "${{ github.event.inputs.lyrics }}"
-          - Style: "${{ github.event.inputs.style }}"
-          - Tempo: "${{ github.event.inputs.tempo }}"
-          **Task:**
-          1. Create a detailed prompt for music generation (Lyria).
-          2. Analyze the lyrics and create creative prompts for image generation (Imagen) for each line.
-          **JSON Structure:**
-          ```json
-          {
-            "music_prompt": "A gentle, melancholic piano melody, slow tempo, with subtle string undertones, evoking a sense of nostalgic anime.",
-            "scenes": [
-              { "index": 0, "lyrics": "First star, shining in the night sky.", "image_prompt": "A breathtakingly beautiful anime-style illustration of a single, brilliant first star appearing in a deep indigo twilight sky." },
-              { "index": 1, "lyrics": "Memories with you, lighting up my heart.", "image_prompt": "A warm, nostalgic anime scene. Two figures on a hill looking at the starry sky, a gentle light emanating from their hearts." }
-            ]
-          }
-          ```
-          EOF
-          )
+          PROMPT=$(cat <<'EOF'
+You are a Music Video Creative Director AI.
+Based on the provided information, create a detailed production plan as a single JSON object.
+**Input:**
+- Lyrics: "${{ github.event.inputs.lyrics }}"
+- Style: "${{ github.event.inputs.style }}"
+- Tempo: "${{ github.event.inputs.tempo }}"
+**Task:**
+1. Create a detailed prompt for music generation (Lyria).
+2. Analyze the lyrics and create creative prompts for image generation (Imagen) for each line.
+**JSON Structure:**
+```json
+{
+  "music_prompt": "A gentle, melancholic piano melody, slow tempo, with subtle string undertones, evoking a sense of nostalgic anime.",
+  "scenes": [
+    { "index": 0, "lyrics": "First star, shining in the night sky.", "image_prompt": "A breathtakingly beautiful anime-style illustration of a single, brilliant first star appearing in a deep indigo twilight sky." },
+    { "index": 1, "lyrics": "Memories with you, lighting up my heart.", "image_prompt": "A warm, nostalgic anime scene. Two figures on a hill looking at the starry sky, a gentle light emanating from their hearts." }
+  ]
+}
+```
+EOF
+)
           gemini --yolo --prompt "$PROMPT" > "$PLAN_FILE"
           echo "plan_file=$PLAN_FILE" >> $GITHUB_OUTPUT
 
