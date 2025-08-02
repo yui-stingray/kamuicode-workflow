@@ -78,8 +78,8 @@ jobs:
           {
             "music_prompt": "A gentle, melancholic piano melody, slow tempo, with subtle string undertones, evoking a sense of nostalgic anime.",
             "scenes": [
-              { "lyrics": "First star, shining in the night sky.", "image_prompt": "A breathtakingly beautiful anime-style illustration of a single, brilliant first star appearing in a deep indigo twilight sky." },
-              { "lyrics": "Memories with you, lighting up my heart.", "image_prompt": "A warm, nostalgic anime scene. Two figures on a hill looking at the starry sky, a gentle light emanating from their hearts." }
+              { "index": 0, "lyrics": "First star, shining in the night sky.", "image_prompt": "A breathtakingly beautiful anime-style illustration of a single, brilliant first star appearing in a deep indigo twilight sky." },
+              { "index": 1, "lyrics": "Memories with you, lighting up my heart.", "image_prompt": "A warm, nostalgic anime scene. Two figures on a hill looking at the starry sky, a gentle light emanating from their hearts." }
             ]
           }
           ```
@@ -104,12 +104,23 @@ jobs:
           FOLDER_NAME="${{ steps.setup.outputs.folder-name }}"
           PLAN_FILE="${{ steps.plan.outputs.plan_file }}"
           IMAGE_DIR="$FOLDER_NAME/images"
+          mkdir -p "$IMAGE_DIR"
 
           jq -c '.scenes[]' "$PLAN_FILE" | while read -r scene;
           do
-            INDEX=$(jq -r '. | .index' <<< "$scene")
+            INDEX=$(jq -r '.index' <<< "$scene")
             PROMPT=$(jq -r '.image_prompt' <<< "$scene")
-            (gemini imagen generate --prompt "$PROMPT" --output "$IMAGE_DIR/segment-$INDEX.png") &
+            (
+              for i in {1..3}; do
+                echo "Attempt $i to generate image segment $INDEX..."
+                if gemini imagen generate --prompt "$PROMPT" --output "$IMAGE_DIR/segment-$INDEX.png"; then
+                  echo "Image segment $INDEX generation successful."
+                  break
+                fi
+                echo "Attempt $i failed. Retrying in 10 seconds..."
+                sleep 10
+              done
+            ) &
           done
           wait
           echo "Image generation complete."
@@ -121,13 +132,26 @@ jobs:
           PLAN_FILE="${{ steps.plan.outputs.plan_file }}"
           IMAGE_DIR="$FOLDER_NAME/images"
           VIDEO_DIR="$FOLDER_NAME/videos"
+          mkdir -p "$VIDEO_DIR"
 
           jq -c '.scenes[]' "$PLAN_FILE" | while read -r scene;
           do
             INDEX=$(jq -r '. | .index' <<< "$scene")
             PROMPT=$(jq -r '.image_prompt' <<< "$scene")
             IMAGE_FILE="$IMAGE_DIR/segment-$INDEX.png"
-            (gemini hailuo generate --image "$IMAGE_FILE" --prompt "$PROMPT" --output "$VIDEO_DIR/segment-$INDEX.mp4") &
+            # The public URL for the image is required for the video generation tool.
+            IMAGE_URL="https://raw.githubusercontent.com/${{ github.repository }}/${{ steps.setup.outputs.branch-name }}/${IMAGE_FILE}"
+            (
+              for i in {1..3}; do
+                echo "Attempt $i to generate video segment $INDEX..."
+                if gemini hailuo generate --image_url "$IMAGE_URL" --prompt "$PROMPT" --output "$VIDEO_DIR/segment-$INDEX.mp4"; then
+                  echo "Video segment $INDEX generation successful."
+                  break
+                fi
+                echo "Attempt $i failed. Retrying in 10 seconds..."
+                sleep 10
+              done
+            ) &
           done
           wait
           echo "Video generation complete."
