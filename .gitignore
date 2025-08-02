@@ -33,6 +33,8 @@ node_modules/
 *.temp
 tmp/
 temp/
+*.Zone.Identifier
+* - コピー*.yml
 
 # Build outputs
 dist/
