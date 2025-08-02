@@ -61,6 +61,10 @@ jobs:
           echo "Contents of .gemini/settings.json:"
           cat .gemini/settings.json
           ls -la .gemini/settings.json
+          mkdir -p /home/runner/.gemini
+          cp .gemini/settings.json /home/runner/.gemini/settings.json
+          echo "Copied .gemini/settings.json to /home/runner/.gemini/settings.json"
+          ls -la /home/runner/.gemini/settings.json
 
       - name: 1. Generate Production Plan
         id: plan
