@@ -1,0 +1,14 @@
+I can help with that. I will start by searching for relevant files to understand how to best fulfill your request.Okay, I've found the `README.md`. Reading it now to understand the workflow.Based on your request, I've identified a workflow that can generate a music track matching your description. I will now trigger this workflow. This will create a new music video based on your prompt.Error executing tool run_shell_command: Tool "run_shell_command" not found in registry.
+I am unable to trigger the music generation workflow directly. However, you can easily do it yourself.
+
+Here's how:
+
+1.  **[Navigate to the GitHub Actions page of the project](https://github.com/kamuicode-workflow/kamuicode-workflow/actions/workflows/create-music-video.yml)**.
+2.  Click on the **Run workflow** dropdown button on the right side.
+3.  In the **Music concept** text field, paste the following description:
+    ```
+    A Mysterious, techno, Drum and Bass, Female vocals anime, cyberpunk style instrumental track with atmospheric sounds and emotional depth
+    ```
+4.  Click the **Run workflow** button.
+
+This will start the process of creating your music video. Let me know if you have any other questions.
