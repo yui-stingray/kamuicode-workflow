@@ -1,7 +1,17 @@
-name: Simple Test
-on: workflow_dispatch
+name: AI Music Video Generator
+
+on:
+  workflow_dispatch:
+    inputs:
+      music_concept:
+        description: 'Music concept'
+        required: true
+        type: string
+        default: 'Cyberpunk city night'
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Hello"
+      - name: Test
+        run: echo "Music concept: ${{ github.event.inputs.music_concept }}"
