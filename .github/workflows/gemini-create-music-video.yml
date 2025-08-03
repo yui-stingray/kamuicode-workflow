@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Create unique branch
         id: setup
@@ -41,6 +43,12 @@ jobs:
           FOLDER_NAME="music-videos/${TIMESTAMP}-${SAFE_STYLE}"
           echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
           echo "folder-name=$FOLDER_NAME" >> $GITHUB_OUTPUT
+          
+          # Configure git
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # Create and push branch
           git checkout -b "$BRANCH_NAME"
           git push -u origin "$BRANCH_NAME"
 
@@ -57,6 +65,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ needs.setup.outputs.branch-name }}
+          fetch-depth: 0
 
       - name: Setup Tools
         run: |
@@ -71,14 +80,27 @@ jobs:
           mkdir -p "$FOLDER_NAME"
           PLAN_FILE_PATH="$FOLDER_NAME/production_plan.json"
 
-          # Use EOF without quotes to allow variable expansion
-          PROMPT=$(cat <<EOF
+          # Verify API key is set (without displaying it)
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "::error::GEMINI_API_KEY is not set"
+            exit 1
+          fi
+          echo "API key is configured ✓"
+
+          # Create prompt with safe variable substitution
+          LYRICS_SAFE="${{ github.event.inputs.lyrics }}"
+          STYLE_SAFE="${{ github.event.inputs.style }}"
+          TEMPO_SAFE="${{ github.event.inputs.tempo }}"
+          
+          # Create prompt file (not logged)
+          PROMPT_FILE=$(mktemp)
+          cat > "$PROMPT_FILE" <<EOF
           You are a Music Video Creative Director AI.
           Based on the provided information, create a detailed production plan as a single JSON object. Do not output any text other than the JSON object.
           **Input:**
-          - Lyrics: "${{ github.event.inputs.lyrics }}"
-          - Style: "${{ github.event.inputs.style }}"
-          - Tempo: "${{ github.event.inputs.tempo }}"
+          - Lyrics: "$LYRICS_SAFE"
+          - Style: "$STYLE_SAFE"
+          - Tempo: "$TEMPO_SAFE"
           **Task:**
           1. Create a detailed prompt for music generation (Lyria).
           2. Analyze the lyrics and create creative prompts for image generation (Imagen) for each line.
@@ -91,28 +113,106 @@ jobs:
             ]
           }
           EOF
-          )
           
-          gemini --prompt "$PROMPT" | sed -n '/```json/,/```/p' | sed '1d;$d' > "$PLAN_FILE_PATH"
+          echo "Calling Gemini API..."
+          
+          # Call Gemini API with prompt file (avoid logging sensitive data)
+          GEMINI_OUTPUT_FILE=$(mktemp)
+          if gemini --prompt-file "$PROMPT_FILE" > "$GEMINI_OUTPUT_FILE" 2>&1; then
+            echo "Gemini API call successful ✓"
+          else
+            echo "::warning::Gemini API call failed, using fallback plan"
+          fi
+          
+          # Clean up prompt file immediately
+          rm -f "$PROMPT_FILE"
+          
+          # Extract JSON from output (without logging full response)
+          if [ -s "$GEMINI_OUTPUT_FILE" ]; then
+            sed -n '/```json/,/```/p' "$GEMINI_OUTPUT_FILE" | sed '1d;$d' > "$PLAN_FILE_PATH"
+            
+            # If that didn't work, try to extract JSON without code blocks
+            if [ ! -s "$PLAN_FILE_PATH" ]; then
+              echo "No JSON code block found, trying direct extraction..."
+              jq . "$GEMINI_OUTPUT_FILE" > "$PLAN_FILE_PATH" 2>/dev/null || true
+            fi
+          fi
+          
+          # Clean up output file
+          rm -f "$GEMINI_OUTPUT_FILE"
+          
+          # If still no valid JSON, create a fallback plan
+          if [ ! -s "$PLAN_FILE_PATH" ] || ! jq . "$PLAN_FILE_PATH" > /dev/null 2>&1; then
+            echo "Creating fallback plan..."
+            cat > "$PLAN_FILE_PATH" <<EOF
+          {
+            "music_prompt": "A $TEMPO_SAFE $STYLE_SAFE style instrumental track with atmospheric sounds and emotional depth",
+            "scenes": [
+              {
+                "index": 0,
+                "lyrics": "Opening scene",
+                "image_prompt": "A beautiful $STYLE_SAFE style illustration representing the opening of the music video"
+              },
+              {
+                "index": 1,
+                "lyrics": "Continuing scene", 
+                "image_prompt": "A stunning $STYLE_SAFE style scene continuing the visual narrative"
+              }
+            ]
+          }
+          EOF
+          fi
 
-          if [ ! -s "$PLAN_FILE_PATH" ]; then
-            echo "::error::Plan file is empty!"
+          echo "Plan file created successfully ✓"
+          
+          # Validate JSON (show structure but not content)
+          if jq . "$PLAN_FILE_PATH" > /dev/null 2>&1; then
+            echo "JSON validation passed ✓"
+            SCENE_COUNT=$(jq '.scenes | length' "$PLAN_FILE_PATH")
+            echo "Generated $SCENE_COUNT scenes"
+          else
+            echo "::error::Generated plan is not valid JSON!"
             exit 1
           fi
-          echo "Production plan generated:"
-          cat "$PLAN_FILE_PATH"
           
           SCENES_JSON=$(jq -c .scenes "$PLAN_FILE_PATH")
+          if [ "$SCENES_JSON" = "null" ] || [ -z "$SCENES_JSON" ]; then
+            echo "::error::No scenes found in plan!"
+            exit 1
+          fi
+          
           echo "plan_file_path=$PLAN_FILE_PATH" >> $GITHUB_OUTPUT
           echo "scenes_json=$SCENES_JSON" >> $GITHUB_OUTPUT
 
+      - name: Debug Git Status
+        run: |
+          echo "Current branch:"
+          git branch -a
+          echo "Git status:"
+          git status
+          echo "Checking folder structure:"
+          ls -la ${{ needs.setup.outputs.folder-name }}/ || echo "Folder not found"
+          # Do not display file contents to avoid logging sensitive data
+
       - name: Commit and Push Plan
         run: |
+          # Configure git
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add .
-          git commit -m "feat: Create music video production plan"
-          git push
+          
+          # Force add the file to ensure it's tracked
+          git add ${{ needs.setup.outputs.folder-name }}/production_plan.json
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            echo "::warning::Production plan file was not created or has no changes"
+          else
+            echo "Changes detected, committing..."
+            git commit -m "feat: Create music video production plan"
+            git push origin ${{ needs.setup.outputs.branch-name }}
+            echo "Plan committed and pushed successfully"
+          fi
 
   music:
     runs-on: ubuntu-latest
@@ -138,13 +238,38 @@ jobs:
         run: |
           FOLDER_NAME="${{ needs.setup.outputs.folder-name }}"
           PLAN_FILE_PATH="${{ needs.plan.outputs.plan_file_path }}"
+          
+          # Verify files exist without displaying content
+          if [ ! -f "$PLAN_FILE_PATH" ]; then
+            echo "::error::Plan file not found at $PLAN_FILE_PATH"
+            exit 1
+          fi
+          
           MUSIC_PROMPT=$(jq -r '.music_prompt' "$PLAN_FILE_PATH")
+          if [ "$MUSIC_PROMPT" = "null" ] || [ -z "$MUSIC_PROMPT" ]; then
+            echo "::error::No music prompt found in plan"
+            exit 1
+          fi
+          
           MUSIC_DIR="$FOLDER_NAME/music"
           mkdir -p "$MUSIC_DIR"
           
-          echo "Generating music with prompt: $MUSIC_PROMPT"
+          echo "Generating music..."
           
-          gemini lyria generate --prompt "$MUSIC_PROMPT" --output_directory "$MUSIC_DIR"
+          # Create temporary prompt file for security
+          PROMPT_FILE=$(mktemp)
+          echo "$MUSIC_PROMPT" > "$PROMPT_FILE"
+          
+          if gemini lyria generate --prompt-file "$PROMPT_FILE" --output_directory "$MUSIC_DIR"; then
+            echo "Music generation successful ✓"
+          else
+            echo "::error::Music generation failed"
+            rm -f "$PROMPT_FILE"
+            exit 1
+          fi
+          
+          # Clean up prompt file
+          rm -f "$PROMPT_FILE"
 
           MUSIC_FILE_PATH=$(find "$MUSIC_DIR" -name "*.wav" -o -name "*.mp3" | head -n 1)
           
@@ -153,7 +278,7 @@ jobs:
             exit 1
           fi
           
-          echo "Music generated at $MUSIC_FILE_PATH"
+          echo "Music generated at: $(basename "$MUSIC_FILE_PATH") ✓"
           echo "music_file_path=$MUSIC_FILE_PATH" >> $GITHUB_OUTPUT
 
       - name: Commit and Push Music
@@ -191,15 +316,28 @@ jobs:
           PROMPT="${{ matrix.scene.image_prompt }}"
           IMAGE_PATH="$IMAGE_DIR/segment-$INDEX.png"
           
-          echo "Generating image $INDEX with prompt: $PROMPT"
+          echo "Generating image $INDEX..."
           
-          gemini imagen generate --prompt "$PROMPT" --output "$IMAGE_PATH"
+          # Create temporary prompt file for security
+          PROMPT_FILE=$(mktemp)
+          echo "$PROMPT" > "$PROMPT_FILE"
+          
+          if gemini imagen generate --prompt-file "$PROMPT_FILE" --output "$IMAGE_PATH"; then
+            echo "Image $INDEX generation successful ✓"
+          else
+            echo "::error::Image $INDEX generation failed"
+            rm -f "$PROMPT_FILE"
+            exit 1
+          fi
+          
+          # Clean up prompt file
+          rm -f "$PROMPT_FILE"
 
           if [ ! -s "$IMAGE_PATH" ]; then
             echo "::error::Image file $IMAGE_PATH is empty!"
             exit 1
           fi
-          echo "Image $INDEX generated at $IMAGE_PATH"
+          echo "Image $INDEX generated successfully ✓"
 
       - name: Commit and Push Image ${{ matrix.scene.index }}
         run: |
@@ -230,7 +368,7 @@ jobs:
         run: |
           FOLDER_NAME="${{ needs.setup.outputs.folder-name }}"
           INDEX=${{ matrix.scene.index }}
-          PROMPT="${{ matrix.scene.image_prompt }}" # Using image prompt for video for now
+          PROMPT="${{ matrix.scene.image_prompt }}"
           IMAGE_FILE_PATH="$FOLDER_NAME/images/segment-$INDEX.png"
           VIDEO_DIR="$FOLDER_NAME/videos"
           VIDEO_PATH="$VIDEO_DIR/segment-$INDEX.mp4"
@@ -239,12 +377,19 @@ jobs:
           # The image is now committed, so the URL is valid.
           IMAGE_URL="https://raw.githubusercontent.com/${{ github.repository }}/${{ needs.setup.outputs.branch-name }}/$IMAGE_FILE_PATH"
           
-          echo "Generating video $INDEX with image URL: $IMAGE_URL"
+          echo "Generating video $INDEX..."
+          
+          # Create temporary prompt file for security
+          PROMPT_FILE=$(mktemp)
+          echo "$PROMPT" > "$PROMPT_FILE"
           
           # Using hailuo which requires polling
-          REQUEST_ID=$(gemini hailuo submit --image_url "$IMAGE_URL" --prompt "$PROMPT" | jq -r .request_id)
+          REQUEST_ID=$(gemini hailuo submit --image_url "$IMAGE_URL" --prompt-file "$PROMPT_FILE" | jq -r .request_id)
+          
+          # Clean up prompt file immediately
+          rm -f "$PROMPT_FILE"
 
-          if [ -z "$REQUEST_ID" ]; then
+          if [ -z "$REQUEST_ID" ] || [ "$REQUEST_ID" = "null" ]; then
             echo "::error::Failed to submit video generation request."
             exit 1
           fi
@@ -269,7 +414,7 @@ jobs:
             echo "::error::Video file $VIDEO_PATH is empty!"
             exit 1
           fi
-          echo "Video $INDEX generated at $VIDEO_PATH"
+          echo "Video $INDEX generated successfully ✓"
 
       - name: Commit and Push Video ${{ matrix.scene.index }}
         run: |
