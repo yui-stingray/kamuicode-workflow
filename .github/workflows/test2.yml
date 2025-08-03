@@ -1,15 +1,7 @@
-name: test
-on:
-  workflow_dispatch:
-    inputs:
-      input1:
-        description: 'Test input'
-        required: true
-        type: string
-
+name: Simple Test
+on: workflow_dispatch
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Test
-        run: echo "Input: ${{ github.event.inputs.input1 }}"
+      - run: echo "Hello"
