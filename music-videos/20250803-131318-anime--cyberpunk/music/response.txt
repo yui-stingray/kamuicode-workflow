@@ -1,0 +1,1 @@
+/home/runner/work/_temp/147d9e81-f5ca-442f-97ca-7e78c4f0dbfc.sh: line 32: gemini: command not found
