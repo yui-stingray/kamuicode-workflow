@@ -1,4 +1,4 @@
-name: "AI Music Video Generator"
+name: AI Music Video Generator
 
 on:
   workflow_dispatch:
