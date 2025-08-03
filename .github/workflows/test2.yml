@@ -1,10 +1,10 @@
-name: MusicVideo
+name: MV Generator
 
 on:
   workflow_dispatch:
     inputs:
-      concept:
-        description: 'Music concept'
+      input1:
+        description: 'Test input'
         required: true
         type: string
 
@@ -13,4 +13,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Test
-        run: echo "Concept: ${{ github.event.inputs.concept }}"
+        run: echo "Input: ${{ github.event.inputs.input1 }}"
