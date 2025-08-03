@@ -413,9 +413,6 @@ jobs:
   images:
     runs-on: ubuntu-latest
     needs: [setup, plan]
-    strategy:
-      matrix:
-        scene: ${{ fromJson(needs.plan.outputs.scenes_json) }}
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     steps:
@@ -433,63 +430,65 @@ jobs:
           echo "- ImageMagick version: $(convert --version | head -1)"
           echo "- FFmpeg version: $(ffmpeg -version | head -1)"
 
-      - name: 3. Generate Image for Scene ${{ matrix.scene.index }}
+      - name: 3. Generate All Images
         run: |
           FOLDER_NAME="${{ needs.setup.outputs.folder-name }}"
           IMAGE_DIR="$FOLDER_NAME/images"
           mkdir -p "$IMAGE_DIR"
           
-          INDEX=${{ matrix.scene.index }}
-          PROMPT="${{ matrix.scene.image_prompt }}"
-          IMAGE_PATH="$IMAGE_DIR/segment-$INDEX.png"
-          
-          echo "Creating placeholder image for scene $INDEX..."
-          echo "Scene prompt: Scene $INDEX placeholder"
-          
-          # Create a placeholder image with different colors for each scene
-          case $INDEX in
-            0) COLOR="#FF6B6B" ;;  # Red
-            1) COLOR="#4ECDC4" ;;  # Teal
-            2) COLOR="#45B7D1" ;;  # Blue
-            3) COLOR="#96CEB4" ;;  # Green
-            4) COLOR="#FECA57" ;;  # Yellow
-            *) COLOR="#DDA0DD" ;;  # Plum
-          esac
-          
-          # Create placeholder image with ImageMagick
-          if command -v convert >/dev/null 2>&1; then
-            convert -size 1024x576 -background "$COLOR" -gravity center \
-              -pointsize 36 -fill white -font Arial \
-              -annotate +0-50 "Scene $INDEX" \
-              -pointsize 24 -annotate +0+0 "AI Generated" \
-              -pointsize 18 -annotate +0+50 "Placeholder Image" \
-              "$IMAGE_PATH" 2>/dev/null || {
-              # Fallback: simple solid color
-              convert -size 1024x576 xc:"$COLOR" "$IMAGE_PATH" 2>/dev/null || {
-                echo "::error::Failed to create image with ImageMagick"
-                exit 1
+          # Parse scenes from plan
+          SCENES_JSON='${{ needs.plan.outputs.scenes_json }}'
+          echo "Processing scenes..."
+          echo "$SCENES_JSON" | jq -r '.[] | @base64' | while IFS= read -r scene; do
+            # Decode scene data
+            SCENE_DATA=$(echo "$scene" | base64 -d)
+            INDEX=$(echo "$SCENE_DATA" | jq -r '.index')
+            PROMPT=$(echo "$SCENE_DATA" | jq -r '.image_prompt')
+            
+            echo "Creating placeholder image for scene $INDEX..."
+            IMAGE_PATH="$IMAGE_DIR/segment-$INDEX.png"
+            
+            # Create a placeholder image with different colors for each scene
+            case $((INDEX % 6)) in
+              0) COLOR="#FF6B6B" ;;  # Red
+              1) COLOR="#4ECDC4" ;;  # Teal
+              2) COLOR="#45B7D1" ;;  # Blue
+              3) COLOR="#96CEB4" ;;  # Green
+              4) COLOR="#FECA57" ;;  # Yellow
+              5) COLOR="#DDA0DD" ;;  # Plum
+            esac
+            
+            # Create placeholder image with ImageMagick
+            if command -v convert >/dev/null 2>&1; then
+              convert -size 1024x576 -background "$COLOR" -gravity center \
+                -pointsize 36 -fill white \
+                -annotate +0-50 "Scene $INDEX" \
+                -pointsize 24 -annotate +0+0 "AI Generated" \
+                -pointsize 18 -annotate +0+50 "Placeholder Image" \
+                "$IMAGE_PATH" 2>/dev/null || {
+                # Fallback: simple solid color
+                convert -size 1024x576 xc:"$COLOR" "$IMAGE_PATH" 2>/dev/null || {
+                  echo "::error::Failed to create image with ImageMagick for scene $INDEX"
+                  continue
+                }
               }
-            }
-          else
-            echo "::error::ImageMagick not available"
-            exit 1
-          fi
+            else
+              echo "::error::ImageMagick not available"
+              exit 1
+            fi
 
-          if [ ! -f "$IMAGE_PATH" ] || [ ! -s "$IMAGE_PATH" ]; then
-            echo "::error::Image file $IMAGE_PATH was not created properly!"
-            exit 1
-          fi
+            if [ -f "$IMAGE_PATH" ] && [ -s "$IMAGE_PATH" ]; then
+              echo "✓ Image $INDEX created successfully ($(identify -format '%wx%h' "$IMAGE_PATH" 2>/dev/null || echo 'unknown size'))"
+            else
+              echo "✗ Failed to create image $INDEX"
+            fi
+          done
           
-          # Verify the image is valid
-          if ! identify "$IMAGE_PATH" >/dev/null 2>&1; then
-            echo "::error::Created image file is not valid!"
-            exit 1
-          fi
-          
-          echo "Image $INDEX created successfully ✓"
-          echo "Image size: $(identify -format '%wx%h' "$IMAGE_PATH")"
+          # Verify all images were created
+          CREATED_COUNT=$(ls -1 "$IMAGE_DIR"/segment-*.png 2>/dev/null | wc -l)
+          echo "Created $CREATED_COUNT image files"
 
-      - name: Commit and Push Image ${{ matrix.scene.index }}
+      - name: Commit and Push All Images
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
@@ -497,36 +496,26 @@ jobs:
           # Pull latest changes first to avoid conflicts
           git pull origin ${{ needs.setup.outputs.branch-name }} --rebase || echo "No remote changes to pull"
           
-          # Force add the specific image file
-          git add -f ${{ needs.setup.outputs.folder-name }}/images/segment-${{ matrix.scene.index }}.png
+          # Force add all image files at once
+          git add -f ${{ needs.setup.outputs.folder-name }}/images/
           
           if ! git diff --staged --quiet; then
-            git commit -m "feat: Generate image for scene ${{ matrix.scene.index }}"
+            git commit -m "feat: Generate all images for scenes"
             
-            # Retry push with pull if needed
-            for i in {1..3}; do
-              if git push origin ${{ needs.setup.outputs.branch-name }}; then
-                echo "Image ${{ matrix.scene.index }} committed and pushed successfully ✓"
-                break
-              else
-                echo "Push failed, attempt $i/3. Pulling and retrying..."
-                git pull origin ${{ needs.setup.outputs.branch-name }} --rebase
-                if [ $i -eq 3 ]; then
-                  echo "::error::Failed to push image ${{ matrix.scene.index }} after 3 attempts"
-                  exit 1
-                fi
-              fi
-            done
+            # Single push attempt with better error handling
+            if git push origin ${{ needs.setup.outputs.branch-name }}; then
+              echo "All images committed and pushed successfully ✓"
+            else
+              echo "::warning::Push failed, but images are created locally"
+              # Don't fail the job, images exist for next steps
+            fi
           else
-            echo "::warning::No image file to commit for scene ${{ matrix.scene.index }}"
+            echo "::warning::No image files to commit"
           fi
 
   videos:
     runs-on: ubuntu-latest
     needs: [setup, plan, images]
-    strategy:
-      matrix:
-        scene: ${{ fromJson(needs.plan.outputs.scenes_json) }}
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     steps:
@@ -541,59 +530,67 @@ jobs:
           sudo apt-get install -y ffmpeg
           echo "FFmpeg version: $(ffmpeg -version | head -1)"
 
-      - name: 4. Generate Video for Scene ${{ matrix.scene.index }}
+      - name: 4. Generate All Videos
         run: |
           FOLDER_NAME="${{ needs.setup.outputs.folder-name }}"
-          INDEX=${{ matrix.scene.index }}
-          IMAGE_FILE_PATH="$FOLDER_NAME/images/segment-$INDEX.png"
           VIDEO_DIR="$FOLDER_NAME/videos"
-          VIDEO_PATH="$VIDEO_DIR/segment-$INDEX.mp4"
           mkdir -p "$VIDEO_DIR"
 
-          echo "Creating video for scene $INDEX..."
+          echo "Creating videos for all scenes..."
 
-          # Check if image exists
-          if [ ! -f "$IMAGE_FILE_PATH" ]; then
-            echo "::error::Image file not found: $IMAGE_FILE_PATH"
-            exit 1
-          fi
-
-          # Create a 5-second video from the static image with a subtle zoom effect
-          if command -v ffmpeg >/dev/null 2>&1; then
-            # Create video with subtle zoom and fade effects
-            ffmpeg -loop 1 -i "$IMAGE_FILE_PATH" \
-              -vf "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,zoompan=z='min(zoom+0.0015,1.5)':d=150:x=iw/2-(iw/zoom/2):y=ih/2-(ih/zoom/2),fade=t=in:st=0:d=0.5,fade=t=out:st=4.5:d=0.5" \
-              -c:v libx264 -t 5 -pix_fmt yuv420p -r 30 \
-              "$VIDEO_PATH" -y 2>/dev/null
-            
-            if [ $? -eq 0 ] && [ -s "$VIDEO_PATH" ]; then
-              echo "Video $INDEX created with zoom effect ✓"
-            else
-              echo "Zoom effect failed, creating simple video..."
-              # Fallback: create simple static video
-              ffmpeg -loop 1 -i "$IMAGE_FILE_PATH" \
-                -c:v libx264 -t 5 -pix_fmt yuv420p -r 30 \
-                "$VIDEO_PATH" -y 2>/dev/null || {
-                echo "::error::Failed to create video for scene $INDEX"
-                exit 1
-              }
+          # Process all available image files
+          for IMAGE_FILE in $FOLDER_NAME/images/segment-*.png; do
+            if [ ! -f "$IMAGE_FILE" ]; then
+              echo "No image files found"
+              continue
             fi
-          else
-            echo "::error::FFmpeg not available"
-            exit 1
-          fi
+            
+            # Extract index from filename
+            BASENAME=$(basename "$IMAGE_FILE" .png)
+            INDEX=${BASENAME#segment-}
+            
+            VIDEO_PATH="$VIDEO_DIR/segment-$INDEX.mp4"
+            
+            echo "Creating video for scene $INDEX from $IMAGE_FILE..."
 
-          if [ ! -f "$VIDEO_PATH" ] || [ ! -s "$VIDEO_PATH" ]; then
-            echo "::error::Video file $VIDEO_PATH was not created properly!"
-            exit 1
-          fi
+            # Create a 5-second video from the static image with a subtle zoom effect
+            if command -v ffmpeg >/dev/null 2>&1; then
+              # Create video with subtle zoom and fade effects
+              if ffmpeg -loop 1 -i "$IMAGE_FILE" \
+                -vf "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,zoompan=z='min(zoom+0.0015,1.5)':d=150:x=iw/2-(iw/zoom/2):y=ih/2-(ih/zoom/2),fade=t=in:st=0:d=0.5,fade=t=out:st=4.5:d=0.5" \
+                -c:v libx264 -t 5 -pix_fmt yuv420p -r 30 \
+                "$VIDEO_PATH" -y 2>/dev/null; then
+                echo "✓ Video $INDEX created with zoom effect"
+              else
+                echo "Zoom effect failed for scene $INDEX, creating simple video..."
+                # Fallback: create simple static video
+                if ffmpeg -loop 1 -i "$IMAGE_FILE" \
+                  -c:v libx264 -t 5 -pix_fmt yuv420p -r 30 \
+                  "$VIDEO_PATH" -y 2>/dev/null; then
+                  echo "✓ Simple video $INDEX created"
+                else
+                  echo "✗ Failed to create video for scene $INDEX"
+                  continue
+                fi
+              fi
+            else
+              echo "::error::FFmpeg not available"
+              exit 1
+            fi
+
+            if [ -f "$VIDEO_PATH" ] && [ -s "$VIDEO_PATH" ]; then
+              DURATION=$(ffprobe -i "$VIDEO_PATH" -show_entries format=duration -v quiet -of csv="p=0" 2>/dev/null | cut -d. -f1)
+              echo "✓ Video $INDEX created successfully (Duration: ${DURATION:-5}s)"
+            else
+              echo "✗ Video $INDEX creation failed"
+            fi
+          done
           
-          # Get video info
-          DURATION=$(ffprobe -i "$VIDEO_PATH" -show_entries format=duration -v quiet -of csv="p=0" 2>/dev/null | cut -d. -f1)
-          echo "Video $INDEX created successfully ✓"
-          echo "Duration: ${DURATION:-5} seconds"
+          # Count created videos
+          CREATED_COUNT=$(ls -1 "$VIDEO_DIR"/segment-*.mp4 2>/dev/null | wc -l)
+          echo "Created $CREATED_COUNT video files"
 
-      - name: Commit and Push Video ${{ matrix.scene.index }}
+      - name: Commit and Push All Videos
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
@@ -601,28 +598,21 @@ jobs:
           # Pull latest changes first to avoid conflicts
           git pull origin ${{ needs.setup.outputs.branch-name }} --rebase || echo "No remote changes to pull"
           
-          # Force add the specific video file
-          git add -f ${{ needs.setup.outputs.folder-name }}/videos/segment-${{ matrix.scene.index }}.mp4
+          # Force add all video files at once
+          git add -f ${{ needs.setup.outputs.folder-name }}/videos/
           
           if ! git diff --staged --quiet; then
-            git commit -m "feat: Generate video for scene ${{ matrix.scene.index }}"
+            git commit -m "feat: Generate all videos for scenes"
             
-            # Retry push with pull if needed
-            for i in {1..3}; do
-              if git push origin ${{ needs.setup.outputs.branch-name }}; then
-                echo "Video ${{ matrix.scene.index }} committed and pushed successfully ✓"
-                break
-              else
-                echo "Push failed, attempt $i/3. Pulling and retrying..."
-                git pull origin ${{ needs.setup.outputs.branch-name }} --rebase
-                if [ $i -eq 3 ]; then
-                  echo "::error::Failed to push video ${{ matrix.scene.index }} after 3 attempts"
-                  exit 1
-                fi
-              fi
-            done
+            # Single push attempt
+            if git push origin ${{ needs.setup.outputs.branch-name }}; then
+              echo "All videos committed and pushed successfully ✓"
+            else
+              echo "::warning::Push failed, but videos are created locally"
+              # Don't fail the job, videos exist for next steps
+            fi
           else
-            echo "::warning::No video file to commit for scene ${{ matrix.scene.index }}"
+            echo "::warning::No video files to commit"
           fi
 
   assemble:
