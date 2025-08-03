@@ -1,17 +1,16 @@
-name: AI Music Video Generator
+name: MV Generator
 
 on:
   workflow_dispatch:
     inputs:
-      music_concept:
-        description: 'Music concept'
+      input1:
+        description: 'Test input'
         required: true
         type: string
-        default: 'Cyberpunk city night'
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Test
-        run: echo "Music concept: ${{ github.event.inputs.music_concept }}"
+        run: echo "Input: ${{ github.event.inputs.input1 }}"
