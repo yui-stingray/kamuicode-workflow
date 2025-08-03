@@ -200,19 +200,38 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          # Force add the file to ensure it's tracked
-          git add ${{ needs.setup.outputs.folder-name }}/production_plan.json
+          # Check if the file exists
+          PLAN_FILE="${{ needs.setup.outputs.folder-name }}/production_plan.json"
+          if [ ! -f "$PLAN_FILE" ]; then
+            echo "::error::Plan file not found at $PLAN_FILE"
+            exit 1
+          fi
+          
+          # Force add the file even if it's in .gitignore
+          git add -f "$PLAN_FILE"
           
           # Check if there are changes to commit
           if git diff --staged --quiet; then
             echo "No changes to commit"
-            echo "::warning::Production plan file was not created or has no changes"
-          else
-            echo "Changes detected, committing..."
-            git commit -m "feat: Create music video production plan"
-            git push origin ${{ needs.setup.outputs.branch-name }}
-            echo "Plan committed and pushed successfully"
+            echo "::warning::Production plan file was not staged properly"
+            
+            # Debug: Check .gitignore patterns
+            echo "Checking .gitignore patterns that might affect this file:"
+            git check-ignore -v "$PLAN_FILE" || echo "File is not ignored by .gitignore"
+            
+            # Try alternative approach: commit all files in the folder
+            git add -f ${{ needs.setup.outputs.folder-name }}/
+            
+            if git diff --staged --quiet; then
+              echo "::error::Still no changes to commit after force add"
+              exit 1
+            fi
           fi
+          
+          echo "Changes detected, committing..."
+          git commit -m "feat: Create music video production plan"
+          git push origin ${{ needs.setup.outputs.branch-name }}
+          echo "Plan committed and pushed successfully ✓"
 
   music:
     runs-on: ubuntu-latest
@@ -285,9 +304,17 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add .
-          git commit -m "feat: Generate music for video"
-          git push
+          
+          # Force add all files in the music folder
+          git add -f ${{ needs.setup.outputs.folder-name }}/music/
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "feat: Generate music for video"
+            git push origin ${{ needs.setup.outputs.branch-name }}
+            echo "Music committed and pushed successfully ✓"
+          else
+            echo "::warning::No music files to commit"
+          fi
 
   images:
     runs-on: ubuntu-latest
@@ -343,9 +370,17 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add .
-          git commit -m "feat: Generate image for scene ${{ matrix.scene.index }}"
-          git push
+          
+          # Force add the specific image file
+          git add -f ${{ needs.setup.outputs.folder-name }}/images/segment-${{ matrix.scene.index }}.png
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "feat: Generate image for scene ${{ matrix.scene.index }}"
+            git push origin ${{ needs.setup.outputs.branch-name }}
+            echo "Image ${{ matrix.scene.index }} committed and pushed successfully ✓"
+          else
+            echo "::warning::No image file to commit for scene ${{ matrix.scene.index }}"
+          fi
 
   videos:
     runs-on: ubuntu-latest
@@ -420,9 +455,17 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add .
-          git commit -m "feat: Generate video for scene ${{ matrix.scene.index }}"
-          git push
+          
+          # Force add the specific video file
+          git add -f ${{ needs.setup.outputs.folder-name }}/videos/segment-${{ matrix.scene.index }}.mp4
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "feat: Generate video for scene ${{ matrix.scene.index }}"
+            git push origin ${{ needs.setup.outputs.branch-name }}
+            echo "Video ${{ matrix.scene.index }} committed and pushed successfully ✓"
+          else
+            echo "::warning::No video file to commit for scene ${{ matrix.scene.index }}"
+          fi
 
   assemble:
     runs-on: ubuntu-latest
@@ -465,9 +508,18 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add .
-          git commit -m "feat: Assemble final music video"
-          git push
+          
+          # Force add all final video files
+          git add -f ${{ needs.setup.outputs.folder-name }}/final/
+          git add -f ${{ needs.setup.outputs.folder-name }}/videos/
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "feat: Assemble final music video"
+            git push origin ${{ needs.setup.outputs.branch-name }}
+            echo "Final video committed and pushed successfully ✓"
+          else
+            echo "::warning::No final video files to commit"
+          fi
 
   create-pr:
     runs-on: ubuntu-latest
