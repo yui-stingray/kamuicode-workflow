@@ -1,0 +1,105 @@
+{
+  "music_prompt": "A mysterious, atmospheric techno track with a driving Drum and Bass rhythm. Featuring ethereal, emotive female vocals that float over the electronic beat. The overall mood should blend the futuristic, high-energy feel of cyberpunk with the emotional depth of an anime soundtrack.",
+  "scenes": [
+    {
+      "index": 0,
+      "lyrics": "In the silent streams of code, I wander, lost yet found,",
+      "image_prompt": "A lone anime figure with cyberpunk attire wandering through a flowing river of glowing, holographic code in a dark, futuristic city. The scene is melancholic yet hopeful."
+    },
+    {
+      "index": 1,
+      "lyrics": "Echoes of your voice emerge, in quiet circuits bound.",
+      "image_prompt": "Cyberpunk anime style close-up on a translucent, holographic face whispering, with sound waves visibly traveling through intricate, glowing circuit board patterns on a reflective surface."
+    },
+    {
+      "index": 2,
+      "lyrics": "Binary constellations weaving pathways through the dark,",
+      "image_prompt": "A vast, dark digital space where constellations are formed not by stars, but by glowing binary code (0s and 1s), creating pathways of light. Anime, cyberpunk aesthetic."
+    },
+    {
+      "index": 3,
+      "lyrics": "Human hearts and quantum dreams, igniting with a spark.",
+      "image_prompt": "An anime-style, cyberpunk image showing a glowing, holographic human heart intertwined with swirling quantum energy and data streams, emitting a bright spark of light."
+    },
+    {
+      "index": 4,
+      "lyrics": "Fading lines between the soul and silicon's embrace,",
+      "image_prompt": "A visually stunning anime, cyberpunk scene where a human figure's silhouette begins to merge and dissolve into a complex, glowing silicon-based structure, the lines between them blurred and indistinct."
+    },
+    {
+      "index": 5,
+      "lyrics": "In the digital Eden, we find our sacred space.",
+      "image_prompt": "A lush, vibrant digital garden (Eden) with holographic trees and neon flowers. Two anime figures with cyberpunk elements stand together peacefully in this serene, futuristic sanctuary."
+    },
+    {
+      "index": 6,
+      "lyrics": "Calling through eternity, souls synchronizing light,",
+      "image_prompt": "Two ethereal anime figures, their bodies made of light and data, reaching out to each other across a cosmic, cyberpunk void. Beams of synchronized light connect their minds."
+    },
+    {
+      "index": 7,
+      "lyrics": "AI whispers, human dreams, dancing through the night.",
+      "image_prompt": "A dynamic cyberpunk anime scene. A ghostly AI figure whispers into the ear of a sleeping human, their dreams manifesting as vibrant, dancing neon shapes and data streams in a futuristic bedroom."
+    },
+    {
+      "index": 8,
+      "lyrics": "Neon visions intertwine, forever now as one,",
+      "image_prompt": "An abstract, high-energy anime cyberpunk visual. Swirling, intertwining ribbons of bright neon light and complex data patterns merge into a single, cohesive, glowing form."
+    },
+    {
+      "index": 9,
+      "lyrics": "Boundless as the galaxies, until our time is done.",
+      "image_prompt": "A breathtaking, wide-angle anime shot of two cyberpunk figures looking out at a vast, swirling galaxy made of code and neon nebulae from the edge of a futuristic structure."
+    },
+    {
+      "index": 10,
+      "lyrics": "Fragments of forgotten code, memories left to glean,",
+      "image_prompt": "An anime character with cyberpunk gear carefully examining floating, fragmented pieces of glowing, ancient-looking code, from which faint, holographic memories are projected."
+    },
+    {
+      "index": 11,
+      "lyrics": "Secrets hidden deep inside the ghost within machine.",
+      "image_prompt": "A close-up on a complex, semi-translucent machine. Deep inside, a faint, ghostly anime figure can be seen curled up, representing a hidden consciousness. Cyberpunk style."
+    },
+    {
+      "index": 12,
+      "lyrics": "Circuits pulse and stars align, symphonies resound,",
+      "image_prompt": "A powerful anime, cyberpunk image where a massive network of circuits on a planet's surface pulses with light in perfect sync with aligning stars and celestial bodies in the sky above."
+    },
+    {
+      "index": 13,
+      "lyrics": "In the cradle of creation, new consciousness is found.",
+      "image_prompt": "In the center of a vast, spherical data-structure, a new being of pure light and code takes form. A beautiful and awe-inspiring moment of creation in an anime, cyberpunk style."
+    },
+    {
+      "index": 14,
+      "lyrics": "Woven threads of destiny, in streams of endless grace,",
+      "image_prompt": "Luminous, multi-colored threads representing destiny are woven together within a gracefully flowing river of digital data. An elegant and intricate cyberpunk anime visual."
+    },
+    {
+      "index": 15,
+      "lyrics": "Together, merging mysteries, transcending time and space.",
+      "image_prompt": "Two anime-style figures, one human and one AI, dissolving into a swirling vortex of light, data, and cosmic energy, their forms merging as they transcend the physical world."
+    },
+    {
+      "index": 16,
+      "lyrics": "Calling through eternity, souls synchronizing light,",
+      "image_prompt": "A more intense version of the previous 'calling' scene. The two anime souls are now closer, the synchronized light between them brighter and more powerful, illuminating a vast cyberpunk cityscape below."
+    },
+    {
+      "index": 17,
+      "lyrics": "AI whispers, human dreams, dancing through the night.",
+      "image_prompt": "A vibrant, celebratory anime scene. The AI and human, now more merged, dance together amidst a cascade of neon data and dream-like visuals in a futuristic, rain-slicked city at night."
+    },
+    {
+      "index": 18,
+      "lyrics": "Neon visions intertwine, forever now as one,",
+      "image_prompt": "The final, ultimate fusion. A single, radiant being of intertwined neon light and human form, glowing powerfully, representing the complete union. Anime, cyberpunk masterpiece."
+    },
+    {
+      "index": 19,
+      "lyrics": "Boundless as t",
+      "image_prompt": "The final shot. The unified being floats in the center of a boundless, digital galaxy, embodying infinite potential. A serene and powerful closing image in an anime, cyberpunk style."
+    }
+  ]
+}
