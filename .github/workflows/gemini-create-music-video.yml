@@ -126,12 +126,19 @@ jobs:
           
           echo "Calling Gemini API..."
           
-          # Call Gemini API with prompt file (avoid logging sensitive data)
+          # Call Gemini API with different approaches
           GEMINI_OUTPUT_FILE=$(mktemp)
-          if gemini --prompt-file "$PROMPT_FILE" > "$GEMINI_OUTPUT_FILE" 2>&1; then
+          
+          # Try approach 1: direct prompt
+          if gemini --prompt "$(cat "$PROMPT_FILE")" --model "gemini-2.5-pro" > "$GEMINI_OUTPUT_FILE" 2>&1; then
             echo "Gemini API call successful ✓"
+          # Try approach 2: interactive mode with prompt
+          elif echo "$(cat "$PROMPT_FILE")" | gemini --model "gemini-2.5-pro" > "$GEMINI_OUTPUT_FILE" 2>&1; then
+            echo "Gemini API call via stdin successful ✓"
           else
             echo "::warning::Gemini API call failed, using fallback plan"
+            echo "API Error details (without sensitive data):"
+            grep -v "$GEMINI_API_KEY" "$GEMINI_OUTPUT_FILE" | head -5 || true
           fi
           
           # Clean up prompt file immediately
@@ -275,8 +282,8 @@ jobs:
       - name: Setup Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y jq
-          npm install -g @google/gemini-cli@latest
+          sudo apt-get install -y jq ffmpeg
+          echo "FFmpeg version: $(ffmpeg -version | head -1)"
 
       - name: 2. Generate Music
         id: music
@@ -320,15 +327,43 @@ jobs:
           echo "Creating placeholder music file..."
           MUSIC_FILE_PATH="$MUSIC_DIR/generated-music.mp3"
           
-          # Create a simple audio file using ffmpeg (white noise as placeholder)
+          # Create a simple audio file using ffmpeg
           if command -v ffmpeg >/dev/null 2>&1; then
-            ffmpeg -f lavfi -i "anoise=duration=30:color=white:sample_rate=44100" -c:a mp3 -b:a 128k "$MUSIC_FILE_PATH" -y 2>/dev/null || {
-              echo "FFmpeg generation failed, creating empty placeholder"
-              touch "$MUSIC_FILE_PATH"
-            }
+            echo "Generating 30-second placeholder audio with FFmpeg..."
+            # Create a simple sine wave tone instead of noise (more reliable)
+            if ffmpeg -f lavfi -i "sine=frequency=440:duration=30" -c:a mp3 -b:a 128k "$MUSIC_FILE_PATH" -y 2>/dev/null; then
+              echo "Sine wave audio generated successfully ✓"
+            elif ffmpeg -f lavfi -i "anullsrc=channel_layout=stereo:sample_rate=44100" -t 30 -c:a mp3 -b:a 128k "$MUSIC_FILE_PATH" -y 2>/dev/null; then
+              echo "Silent audio generated successfully ✓"
+            else
+              echo "FFmpeg audio generation failed, creating minimal MP3..."
+              # Create a minimal valid MP3 header + data
+              printf '\xFF\xFB\x90\x00' > "$MUSIC_FILE_PATH"
+              for i in {1..1000}; do
+                printf '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' >> "$MUSIC_FILE_PATH"
+              done
+            fi
           else
             echo "FFmpeg not available, creating empty placeholder"
             touch "$MUSIC_FILE_PATH"
+          fi
+          
+          # Verify the audio file is valid
+          if [ -f "$MUSIC_FILE_PATH" ] && [ -s "$MUSIC_FILE_PATH" ]; then
+            echo "Music file created: $(du -h "$MUSIC_FILE_PATH" | cut -f1)"
+            # Test if FFmpeg can read the file
+            if ffprobe "$MUSIC_FILE_PATH" >/dev/null 2>&1; then
+              echo "Audio file validation passed ✓"
+            else
+              echo "Audio file validation failed, recreating..."
+              # Fallback: create a simple WAV file and convert to MP3
+              ffmpeg -f lavfi -i "sine=frequency=220:duration=10" -c:a pcm_s16le "$MUSIC_DIR/temp.wav" -y 2>/dev/null
+              ffmpeg -i "$MUSIC_DIR/temp.wav" -c:a mp3 -b:a 128k "$MUSIC_FILE_PATH" -y 2>/dev/null
+              rm -f "$MUSIC_DIR/temp.wav"
+            fi
+          else
+            echo "::error::Failed to create music file"
+            exit 1
           fi
           
           # Clean up prompt file
@@ -650,13 +685,25 @@ jobs:
           # Go back to root
           cd - > /dev/null
 
-          # Verify music file exists
+          # Verify music file exists and is valid
           if [ ! -f "$MUSIC_FILE_PATH" ]; then
             echo "::error::Music file not found at $MUSIC_FILE_PATH"
             exit 1
           fi
 
+          if [ ! -s "$MUSIC_FILE_PATH" ]; then
+            echo "::warning::Music file is empty, creating minimal audio track"
+            # Create a minimal audio track
+            ffmpeg -f lavfi -i "sine=frequency=440:duration=10" -c:a mp3 -b:a 128k "$MUSIC_FILE_PATH" -y
+          fi
+
           echo "Music file: $MUSIC_FILE_PATH ($(du -h "$MUSIC_FILE_PATH" | cut -f1))"
+          
+          # Validate audio file
+          if ! ffprobe "$MUSIC_FILE_PATH" >/dev/null 2>&1; then
+            echo "::warning::Invalid audio file detected, creating new one"
+            ffmpeg -f lavfi -i "sine=frequency=440:duration=10" -c:a mp3 -b:a 128k "$MUSIC_FILE_PATH" -y
+          fi
 
           # Add music to the concatenated video
           echo "Adding music to video..."
@@ -690,14 +737,30 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
+          # Pull latest changes first to avoid conflicts
+          git pull origin ${{ needs.setup.outputs.branch-name }} --rebase || echo "No remote changes to pull"
+          
           # Force add all final video files
           git add -f ${{ needs.setup.outputs.folder-name }}/final/
-          git add -f ${{ needs.setup.outputs.folder-name }}/videos/
+          git add -f ${{ needs.setup.outputs.folder-name }}/videos/concatenated.mp4
           
           if ! git diff --staged --quiet; then
             git commit -m "feat: Assemble final music video"
-            git push origin ${{ needs.setup.outputs.branch-name }}
-            echo "Final video committed and pushed successfully ✓"
+            
+            # Retry push with pull if needed
+            for i in {1..3}; do
+              if git push origin ${{ needs.setup.outputs.branch-name }}; then
+                echo "Final video committed and pushed successfully ✓"
+                break
+              else
+                echo "Push failed, attempt $i/3. Pulling and retrying..."
+                git pull origin ${{ needs.setup.outputs.branch-name }} --rebase
+                if [ $i -eq 3 ]; then
+                  echo "::error::Failed to push final video after 3 attempts"
+                  exit 1
+                fi
+              fi
+            done
           else
             echo "::warning::No final video files to commit"
           fi
