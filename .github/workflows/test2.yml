@@ -1,17 +1,16 @@
-name: Music Video Creator
+name: MusicVideo
 
 on:
   workflow_dispatch:
     inputs:
-      music_concept:
+      concept:
         description: 'Music concept'
         required: true
         type: string
-        default: 'Cyberpunk city night'
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Test
-        run: echo "Music concept: ${{ github.event.inputs.music_concept }}"
+        run: echo "Concept: ${{ github.event.inputs.concept }}"
