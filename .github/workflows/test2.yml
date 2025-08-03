@@ -1,4 +1,4 @@
-name: AI Music Video Generator
+name: Music Video Creator
 
 on:
   workflow_dispatch:
