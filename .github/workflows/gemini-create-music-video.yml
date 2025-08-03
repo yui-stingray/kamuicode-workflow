@@ -436,14 +436,23 @@ jobs:
           IMAGE_DIR="$FOLDER_NAME/images"
           mkdir -p "$IMAGE_DIR"
           
-          # Parse scenes from plan
-          SCENES_JSON='${{ needs.plan.outputs.scenes_json }}'
+          # Parse scenes from plan using a safer approach
           echo "Processing scenes..."
-          echo "$SCENES_JSON" | jq -r '.[] | @base64' | while IFS= read -r scene; do
-            # Decode scene data
-            SCENE_DATA=$(echo "$scene" | base64 -d)
-            INDEX=$(echo "$SCENE_DATA" | jq -r '.index')
-            PROMPT=$(echo "$SCENE_DATA" | jq -r '.image_prompt')
+          
+          # Write scenes JSON to a temporary file to avoid shell parsing issues
+          SCENES_FILE=$(mktemp)
+          cat > "$SCENES_FILE" << 'EOF'
+          ${{ needs.plan.outputs.scenes_json }}
+          EOF
+          
+          # Process each scene
+          SCENE_COUNT=$(jq length "$SCENES_FILE")
+          echo "Found $SCENE_COUNT scenes to process"
+          
+          for i in $(seq 0 $((SCENE_COUNT - 1))); do
+            INDEX=$(jq -r ".[$i].index" "$SCENES_FILE")
+            LYRICS=$(jq -r ".[$i].lyrics" "$SCENES_FILE")
+            PROMPT=$(jq -r ".[$i].image_prompt" "$SCENES_FILE")
             
             echo "Creating placeholder image for scene $INDEX..."
             IMAGE_PATH="$IMAGE_DIR/segment-$INDEX.png"
@@ -460,33 +469,41 @@ jobs:
             
             # Create placeholder image with ImageMagick
             if command -v convert >/dev/null 2>&1; then
-              convert -size 1024x576 -background "$COLOR" -gravity center \
+              if convert -size 1024x576 -background "$COLOR" -gravity center \
                 -pointsize 36 -fill white \
                 -annotate +0-50 "Scene $INDEX" \
                 -pointsize 24 -annotate +0+0 "AI Generated" \
                 -pointsize 18 -annotate +0+50 "Placeholder Image" \
-                "$IMAGE_PATH" 2>/dev/null || {
+                "$IMAGE_PATH" 2>/dev/null; then
+                echo "✓ Image $INDEX created successfully"
+              else
                 # Fallback: simple solid color
-                convert -size 1024x576 xc:"$COLOR" "$IMAGE_PATH" 2>/dev/null || {
-                  echo "::error::Failed to create image with ImageMagick for scene $INDEX"
+                if convert -size 1024x576 xc:"$COLOR" "$IMAGE_PATH" 2>/dev/null; then
+                  echo "✓ Image $INDEX created (simple version)"
+                else
+                  echo "✗ Failed to create image with ImageMagick for scene $INDEX"
                   continue
-                }
-              }
+                fi
+              fi
             else
               echo "::error::ImageMagick not available"
               exit 1
             fi
-
+          
             if [ -f "$IMAGE_PATH" ] && [ -s "$IMAGE_PATH" ]; then
-              echo "✓ Image $INDEX created successfully ($(identify -format '%wx%h' "$IMAGE_PATH" 2>/dev/null || echo 'unknown size'))"
+              SIZE=$(identify -format '%wx%h' "$IMAGE_PATH" 2>/dev/null || echo 'unknown size')
+              echo "✓ Image $INDEX verified ($SIZE)"
             else
               echo "✗ Failed to create image $INDEX"
             fi
           done
           
+          # Clean up temporary file
+          rm -f "$SCENES_FILE"
+          
           # Verify all images were created
           CREATED_COUNT=$(ls -1 "$IMAGE_DIR"/segment-*.png 2>/dev/null | wc -l)
-          echo "Created $CREATED_COUNT image files"
+          echo "Created $CREATED_COUNT image files total"
 
       - name: Commit and Push All Images
         run: |
