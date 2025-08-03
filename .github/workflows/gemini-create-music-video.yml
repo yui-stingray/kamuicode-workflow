@@ -217,6 +217,9 @@ jobs:
             exit 1
           fi
           
+          # Pull latest changes first to avoid conflicts
+          git pull origin ${{ needs.setup.outputs.branch-name }} || echo "No remote changes to pull"
+          
           # Force add the file even if it's in .gitignore
           git add -f "$PLAN_FILE"
           
@@ -240,8 +243,21 @@ jobs:
           
           echo "Changes detected, committing..."
           git commit -m "feat: Create music video production plan"
-          git push origin ${{ needs.setup.outputs.branch-name }}
-          echo "Plan committed and pushed successfully ✓"
+          
+          # Retry push with pull if needed
+          for i in {1..3}; do
+            if git push origin ${{ needs.setup.outputs.branch-name }}; then
+              echo "Plan committed and pushed successfully ✓"
+              break
+            else
+              echo "Push failed, attempt $i/3. Pulling and retrying..."
+              git pull origin ${{ needs.setup.outputs.branch-name }} --rebase
+              if [ $i -eq 3 ]; then
+                echo "::error::Failed to push after 3 attempts"
+                exit 1
+              fi
+            fi
+          done
 
   music:
     runs-on: ubuntu-latest
@@ -332,13 +348,29 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
+          # Pull latest changes first to avoid conflicts
+          git pull origin ${{ needs.setup.outputs.branch-name }} --rebase || echo "No remote changes to pull"
+          
           # Force add all files in the music folder
           git add -f ${{ needs.setup.outputs.folder-name }}/music/
           
           if ! git diff --staged --quiet; then
             git commit -m "feat: Generate music for video"
-            git push origin ${{ needs.setup.outputs.branch-name }}
-            echo "Music committed and pushed successfully ✓"
+            
+            # Retry push with pull if needed
+            for i in {1..3}; do
+              if git push origin ${{ needs.setup.outputs.branch-name }}; then
+                echo "Music committed and pushed successfully ✓"
+                break
+              else
+                echo "Push failed, attempt $i/3. Pulling and retrying..."
+                git pull origin ${{ needs.setup.outputs.branch-name }} --rebase
+                if [ $i -eq 3 ]; then
+                  echo "::error::Failed to push music after 3 attempts"
+                  exit 1
+                fi
+              fi
+            done
           else
             echo "::warning::No music files to commit"
           fi
@@ -427,13 +459,29 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
+          # Pull latest changes first to avoid conflicts
+          git pull origin ${{ needs.setup.outputs.branch-name }} --rebase || echo "No remote changes to pull"
+          
           # Force add the specific image file
           git add -f ${{ needs.setup.outputs.folder-name }}/images/segment-${{ matrix.scene.index }}.png
           
           if ! git diff --staged --quiet; then
             git commit -m "feat: Generate image for scene ${{ matrix.scene.index }}"
-            git push origin ${{ needs.setup.outputs.branch-name }}
-            echo "Image ${{ matrix.scene.index }} committed and pushed successfully ✓"
+            
+            # Retry push with pull if needed
+            for i in {1..3}; do
+              if git push origin ${{ needs.setup.outputs.branch-name }}; then
+                echo "Image ${{ matrix.scene.index }} committed and pushed successfully ✓"
+                break
+              else
+                echo "Push failed, attempt $i/3. Pulling and retrying..."
+                git pull origin ${{ needs.setup.outputs.branch-name }} --rebase
+                if [ $i -eq 3 ]; then
+                  echo "::error::Failed to push image ${{ matrix.scene.index }} after 3 attempts"
+                  exit 1
+                fi
+              fi
+            done
           else
             echo "::warning::No image file to commit for scene ${{ matrix.scene.index }}"
           fi
@@ -515,13 +563,29 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
+          # Pull latest changes first to avoid conflicts
+          git pull origin ${{ needs.setup.outputs.branch-name }} --rebase || echo "No remote changes to pull"
+          
           # Force add the specific video file
           git add -f ${{ needs.setup.outputs.folder-name }}/videos/segment-${{ matrix.scene.index }}.mp4
           
           if ! git diff --staged --quiet; then
             git commit -m "feat: Generate video for scene ${{ matrix.scene.index }}"
-            git push origin ${{ needs.setup.outputs.branch-name }}
-            echo "Video ${{ matrix.scene.index }} committed and pushed successfully ✓"
+            
+            # Retry push with pull if needed
+            for i in {1..3}; do
+              if git push origin ${{ needs.setup.outputs.branch-name }}; then
+                echo "Video ${{ matrix.scene.index }} committed and pushed successfully ✓"
+                break
+              else
+                echo "Push failed, attempt $i/3. Pulling and retrying..."
+                git pull origin ${{ needs.setup.outputs.branch-name }} --rebase
+                if [ $i -eq 3 ]; then
+                  echo "::error::Failed to push video ${{ matrix.scene.index }} after 3 attempts"
+                  exit 1
+                fi
+              fi
+            done
           else
             echo "::warning::No video file to commit for scene ${{ matrix.scene.index }}"
           fi
