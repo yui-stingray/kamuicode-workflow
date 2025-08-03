@@ -1,7 +1,16 @@
-name: Test2
-on: workflow_dispatch
+name: MV Generator
+
+on:
+  workflow_dispatch:
+    inputs:
+      input1:
+        description: 'Test input'
+        required: true
+        type: string
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Test2"
+      - name: Test
+        run: echo "Input: ${{ github.event.inputs.input1 }}"
