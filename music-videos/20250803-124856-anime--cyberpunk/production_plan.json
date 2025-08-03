@@ -1,0 +1,15 @@
+{
+  "music_prompt": "A Mysterious, techno, Drum and Bass, Female vocals anime, cyberpunk style instrumental track with atmospheric sounds and emotional depth",
+  "scenes": [
+    {
+      "index": 0,
+      "lyrics": "Opening scene",
+      "image_prompt": "A beautiful anime, cyberpunk style illustration representing the opening of the music video"
+    },
+    {
+      "index": 1,
+      "lyrics": "Continuing scene", 
+      "image_prompt": "A stunning anime, cyberpunk style scene continuing the visual narrative"
+    }
+  ]
+}
