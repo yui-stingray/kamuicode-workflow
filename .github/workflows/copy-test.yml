@@ -1,7 +1,15 @@
-name: copy-test
-on: workflow_dispatch
+name: MV Gen
+on:
+  workflow_dispatch:
+    inputs:
+      concept:
+        description: 'Music concept'
+        required: true
+        type: string
+        default: 'Electronic music'
 jobs:
-  test:
+  setup:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Test2"
+      - name: Test
+        run: echo "Concept: ${{ github.event.inputs.concept }}"
