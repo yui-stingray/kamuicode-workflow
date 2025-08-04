@@ -1,0 +1,76 @@
+name: Audio Visual Generation
+
+on:
+  workflow_dispatch:
+    inputs:
+      concept:
+        description: 'Audio visual concept (e.g., "Cyberpunk city night, electronic")'
+        required: true
+        type: string
+        default: 'Cyberpunk city night, electronic'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      branch-name: ${{ steps.setup.outputs.branch-name }}
+      folder-name: ${{ steps.setup.outputs.folder-name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create unique branch
+        id: setup
+        run: |
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          SAFE_CONCEPT=$(echo "${{ github.event.inputs.concept }}" | sed 's/[^a-zA-Z0-9]/-/g' | cut -c1-20)
+          BRANCH_NAME="av/${SAFE_CONCEPT}-${TIMESTAMP}"
+          FOLDER_NAME="audio-visual/${TIMESTAMP}-${SAFE_CONCEPT}"
+          echo "branch-name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "folder-name=$FOLDER_NAME" >> $GITHUB_OUTPUT
+          
+          # Configure git
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # Create and push branch
+          git checkout -b "$BRANCH_NAME"
+          git push -u origin "$BRANCH_NAME"
+          
+          echo "✅ Branch created successfully: $BRANCH_NAME"
+
+  test-planning:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.setup.outputs.branch-name }}
+
+      - name: Create planning structure
+        run: |
+          FOLDER_NAME="${{ needs.setup.outputs.folder-name }}"
+          mkdir -p "$FOLDER_NAME/planning"
+          
+          echo "Concept: ${{ github.event.inputs.concept }}" > "$FOLDER_NAME/planning/concept.txt"
+          echo "Timestamp: $(date)" >> "$FOLDER_NAME/planning/concept.txt"
+          
+          echo "✅ Planning structure created"
+
+      - name: Commit planning files
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          git add -f ${{ needs.setup.outputs.folder-name }}/planning/
+          git commit -m "feat: Create planning structure"
+          git push origin ${{ needs.setup.outputs.branch-name }}
+          
+          echo "✅ Planning files committed"
