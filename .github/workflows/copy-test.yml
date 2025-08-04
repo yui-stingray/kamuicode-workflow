@@ -1,15 +1,7 @@
-name: MV Gen
-on:
-  workflow_dispatch:
-    inputs:
-      concept:
-        description: 'Music concept'
-        required: true
-        type: string
-        default: 'Electronic music'
+name: Audio Visual Generation
+on: workflow_dispatch
 jobs:
-  setup:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Test
-        run: echo "Concept: ${{ github.event.inputs.concept }}"
+      - run: echo "Audio Visual"
