@@ -1,7 +1,7 @@
-name: Audio Visual Generation
+name: Media Synthesis
 on: workflow_dispatch
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Audio Visual"
+      - run: echo "Media Synthesis"
