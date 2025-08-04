@@ -1,0 +1,14 @@
+name: Test2
+on:
+  workflow_dispatch:
+    inputs:
+      concept:
+        description: 'Concept input'
+        required: true
+        type: string
+        default: 'Test concept'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Concept: ${{ github.event.inputs.concept }}"
