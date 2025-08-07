@@ -1,0 +1,1 @@
+A fluffy calico cat playfully chases and pounces on gently falling cherry blossom petals under a beautiful cherry tree. The wind softly rustles the branches, causing a continuous, gentle shower of pink petals to drift down. The cat's tail twitches with excitement as it moves gracefully and curiously. cinematic, smooth motion, high frame rate, dynamic and fluid movement.
